@@ -20,18 +20,18 @@ class NotificationIconHelper(private val context: Context) {
     private val paintValue by lazy {
         Paint().apply {
             color = context.getColor(R.color.white)
-            typeface = convertFontFamilyToTypeface(context, googleSans(weight = 500f, width = 50f))
+            typeface = convertFontFamilyToTypeface(context, googleSans(weight = 500f, width = 60f))
             textAlign = Paint.Align.CENTER
-            textSize = 82f * multiplier
+            textSize = 72f * multiplier
             letterSpacing = -0.05f * multiplier
         }
     }
     private val paintUnit by lazy {
         Paint().apply {
             color = context.getColor(R.color.white)
-            typeface = convertFontFamilyToTypeface(context, googleSans(weight = 600f, width = 110f))
+            typeface = convertFontFamilyToTypeface(context, googleSans(weight = 600f, width = 80f))
             textAlign = Paint.Align.CENTER
-            textSize = 36f * multiplier
+            textSize = 46f * multiplier
             letterSpacing = 0f * multiplier
         }
     }
@@ -54,7 +54,7 @@ class NotificationIconHelper(private val context: Context) {
 
             val canvas = Canvas(bitmap!!)
 
-            canvas.drawText(speed, 48f * multiplier, 62f * multiplier, paintValue)
+            canvas.drawText(speed, 48f * multiplier, 54f * multiplier, paintValue)
             canvas.drawText(unit, 48f * multiplier, 94f * multiplier, paintUnit)
 
             /**
