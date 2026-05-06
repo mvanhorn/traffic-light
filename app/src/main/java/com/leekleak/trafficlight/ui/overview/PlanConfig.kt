@@ -1,7 +1,6 @@
 package com.leekleak.trafficlight.ui.overview
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.os.Build
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult

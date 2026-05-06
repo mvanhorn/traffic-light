@@ -8,6 +8,7 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
@@ -27,6 +28,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialShapes.Companion.Cookie12Sided
@@ -183,6 +185,7 @@ fun Overview(
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun OverviewHero(scrollState: ScrollState) {
     val viewModel: OverviewVM = koinViewModel()
@@ -227,6 +230,11 @@ private fun OverviewHero(scrollState: ScrollState) {
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(1f)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = { }
+            ),
     ) {
         Box(
             modifier = Modifier
@@ -247,10 +255,13 @@ private fun OverviewHero(scrollState: ScrollState) {
             val todayUsage by viewModel.todayUsage.collectAsState()
             val string = DataSize(todayUsage).toStringParts(extraPrecision = true)
 
-            val width by animateFloatAsState(if (pressed) 60f else 30f)
-            val weight by animateFloatAsState(if (pressed) 800f else 400f)
+            val width by animateFloatAsState(
+                targetValue = if (pressed) 60f else 30f,
+                animationSpec = spring()
+            )
+            val weight by animateFloatAsState(if (pressed) 800f else 400f, spring())
             val fontFamily1 = remember(weight, width) { googleSans(weight = weight, width = width, roundness = 100f) }
-            val fontFamily2 = remember { googleSans(weight = 600f, width = 100f, roundness = 50f) }
+            val fontFamily2 = remember(width) { googleSans(weight = 600f, width = width + 70f, roundness = 50f) }
 
             LaunchedEffect(pressed) {
                 if (pressed) {
@@ -260,13 +271,7 @@ private fun OverviewHero(scrollState: ScrollState) {
                 }
             }
             Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(
-                        interactionSource = interactionSource,
-                        indication = null,
-                        onClick = { }
-                    ),
+                modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
                 text = buildAnnotatedString {
                     withStyle(style = SpanStyle(fontFamily = fontFamily1, fontSize = 100.sp)) {

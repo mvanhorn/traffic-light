@@ -2,7 +2,6 @@
 
 package com.leekleak.trafficlight.ui.overview
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -95,7 +94,6 @@ private fun BoxBackground(
     }
 }
 
-@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun UnconfiguredDataPlan(dataPlan: DataPlan, onConfigure: () -> Unit) {
     val haptic = LocalHapticFeedback.current

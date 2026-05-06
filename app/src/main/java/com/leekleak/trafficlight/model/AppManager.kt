@@ -1,6 +1,5 @@
 package com.leekleak.trafficlight.model
 
-import android.annotation.SuppressLint
 import android.app.usage.NetworkStats.Bucket.UID_REMOVED
 import android.app.usage.NetworkStats.Bucket.UID_TETHERING
 import android.content.Context
@@ -24,7 +23,6 @@ import coil3.fetch.ImageFetchResult
 import coil3.request.Options
 import com.leekleak.trafficlight.R
 
-@SuppressLint("QueryPermissionsNeeded")
 class AppManager(context: Context) {
     private val packageManager: PackageManager = context.packageManager
     val allApps =

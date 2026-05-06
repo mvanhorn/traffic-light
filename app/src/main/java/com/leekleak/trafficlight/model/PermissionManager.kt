@@ -1,7 +1,6 @@
 package com.leekleak.trafficlight.model
 
 import android.Manifest.permission.POST_NOTIFICATIONS
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AppOpsManager
 import android.content.Context
@@ -35,7 +34,6 @@ class PermissionManager(
     private val _shizukuPermission = MutableStateFlow(false)
     val shizukuPermissionFlow = _shizukuPermission.asStateFlow()
 
-    @SuppressLint("BatteryLife")
     fun askBackgroundPermission(activity: Activity?) {
         activity?.startActivity(
             Intent(
