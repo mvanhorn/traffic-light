@@ -177,9 +177,9 @@ fun Settings(paddingValues: PaddingValues) {
             Row (
                 modifier = Modifier
                     .padding(vertical = 4.dp)
+                    .fillMaxWidth()
                     .card()
                     .horizontalScroll(scroll)
-                    .fillMaxWidth()
                     .padding(start = 8.dp, end = 8.dp, bottom = 8.dp, top = 4.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
