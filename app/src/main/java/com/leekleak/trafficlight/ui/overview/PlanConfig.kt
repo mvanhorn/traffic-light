@@ -374,7 +374,6 @@ fun PlanConfig(currentPlan: DataPlan) {
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 private fun LazyListScope.typeConfig(newPlan: DataPlan, onPlanChange: (plan: DataPlan) -> Unit) {
     item {
-        val context = LocalContext.current
         val haptic = LocalHapticFeedback.current
         val fontFamily = remember { googleSans(weight = 600f) }
         val fontFamilyBold = remember { googleSans(weight = 800f) }
@@ -384,6 +383,8 @@ private fun LazyListScope.typeConfig(newPlan: DataPlan, onPlanChange: (plan: Dat
                 .padding(horizontal = 8.dp, vertical = 4.dp)
         ) {
             val interval by remember(newPlan) { derivedStateOf { newPlan.interval } }
+            val monthlyString = stringResource(R.string.monthly)
+            val customString = stringResource(R.string.custom)
             ButtonGroup(
                 modifier = Modifier.fillMaxWidth(),
                 expandedRatio = 0.05f,
@@ -391,7 +392,7 @@ private fun LazyListScope.typeConfig(newPlan: DataPlan, onPlanChange: (plan: Dat
             ) {
                 toggleableItem(
                     checked = interval == TimeInterval.MONTH,
-                    label = context.getString(R.string.monthly),
+                    label = monthlyString,
                     icon = {
                         Icon(
                             painter = painterResource(R.drawable.calendar),
@@ -406,7 +407,7 @@ private fun LazyListScope.typeConfig(newPlan: DataPlan, onPlanChange: (plan: Dat
                 )
                 toggleableItem(
                     checked = interval == TimeInterval.DAY,
-                    label = context.getString(R.string.custom),
+                    label = customString,
                     icon = {
                         Icon(
                             painter = painterResource(R.drawable.custom),
