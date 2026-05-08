@@ -107,7 +107,7 @@ class TrafficSnapshot (
         }
 
         /**
-         * Fun fact: when switching networks the api sometimes fucks up the values as per
+         * Fun fact: when switching networks the api sometimes messes up the values as per
          * https://issuetracker.google.com/issues/37009612
          * Yes. That bug report is from 2014.
          * Yes. It still happens on my Android 16 device.
