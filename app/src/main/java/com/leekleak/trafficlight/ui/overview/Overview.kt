@@ -1,6 +1,5 @@
 package com.leekleak.trafficlight.ui.overview
 
-import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat
@@ -17,7 +16,6 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -43,7 +41,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
@@ -67,24 +64,17 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.charts.BarGraph
-import com.leekleak.trafficlight.database.AppPreferenceRepo
-import com.leekleak.trafficlight.database.DataPlanDao
 import com.leekleak.trafficlight.ui.navigation.Navigator
-import com.leekleak.trafficlight.ui.navigation.PlanConfig
-import com.leekleak.trafficlight.ui.navigation.Settings
-import com.leekleak.trafficlight.ui.settings.PermissionButton
-import com.leekleak.trafficlight.ui.settings.PermissionCard
+import com.leekleak.trafficlight.ui.navigation.SettingsKey
 import com.leekleak.trafficlight.ui.theme.card
 import com.leekleak.trafficlight.ui.theme.googleSans
 import com.leekleak.trafficlight.util.CategoryTitleText
 import com.leekleak.trafficlight.util.DataSize
 import com.leekleak.trafficlight.util.EqualHeightRow
 import com.leekleak.trafficlight.util.PageTitle
-import com.leekleak.trafficlight.util.openLink
 import com.leekleak.trafficlight.util.px
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
-import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
@@ -131,7 +121,6 @@ fun Overview(
                 },
                 second = {
                     Column (Modifier.weight(1f)) {
-                        DataPlanItems(navigator)
                         OverviewItems()
                     }
                 },
@@ -139,7 +128,6 @@ fun Overview(
             )
         } else {
             HeroItems(scrollState)
-            DataPlanItems(navigator)
             OverviewItems()
         }
         Box(Modifier.height(paddingBottom - 8.dp))
@@ -147,7 +135,7 @@ fun Overview(
     PageTitle(false, hazeState, stringResource(R.string.today)) {
         IconButton(
             modifier = Modifier.align(Alignment.CenterEnd),
-            onClick = { navigator.goTo(Settings) }
+            onClick = { navigator.goTo(SettingsKey) }
         ) {
             Icon(
                 painterResource(R.drawable.settings),
@@ -158,59 +146,8 @@ fun Overview(
 }
 
 @Composable
-private fun DataPlanItems(
-    navigator: Navigator,
-) {
-    val dataPlanDao: DataPlanDao = koinInject()
-    val appPreferenceRepo: AppPreferenceRepo = koinInject()
-
-    val activity = LocalActivity.current
-    val scope = rememberCoroutineScope()
-
-    val activePlans by remember { dataPlanDao.getActivePlansFlow() }.collectAsState(listOf())
-    val shizukuHint by remember { appPreferenceRepo.shizukuHint }.collectAsState(false)
-    val shizukuTracking by remember { appPreferenceRepo.shizukuTracking }.collectAsState(true)
-
-    CategoryTitleText(stringResource(R.string.data_plans))
-
-    for (i in activePlans) {
-        if (i.dataMax != 0L) {
-            ConfiguredDataPlan(i) {
-                navigator.goTo(PlanConfig(i))
-            }
-        } else {
-            UnconfiguredDataPlan(i) {
-                navigator.goTo(PlanConfig(i))
-            }
-        }
-    }
-
-    if (shizukuHint && !shizukuTracking) {
-        PermissionCard(
-            title = stringResource(R.string.shizuku_hint),
-            description = stringResource(R.string.shizuku_hint_description),
-            icon = painterResource(R.drawable.warning),
-            onHelp = {
-                openLink(
-                    activity,
-                    "https://github.com/leekleak/traffic-light/wiki/Setting-up-Shizuku-for-multi%E2%80%90SIM-tracking"
-                )
-            },
-            actionButton = {
-                PermissionButton(
-                    icon = painterResource(R.drawable.close),
-                    contentDescription = stringResource(R.string.close),
-                    onClick = { scope.launch { appPreferenceRepo.setShizukuHint(false) } }
-                )
-            }
-        )
-    }
-}
-
-@Composable
-private fun ColumnScope.HeroItems(scrollState: ScrollState) {
+private fun HeroItems(scrollState: ScrollState) {
     OverviewHero(scrollState)
-    //Spacer(modifier = Modifier.weight(1f))
     Row(
         modifier = Modifier.height(IntrinsicSize.Min),
         horizontalArrangement = Arrangement.spacedBy(8.dp)

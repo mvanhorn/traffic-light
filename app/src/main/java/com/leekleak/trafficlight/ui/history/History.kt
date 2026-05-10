@@ -78,7 +78,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -99,7 +98,7 @@ import com.leekleak.trafficlight.model.AppManager.Companion.unknownApp
 import com.leekleak.trafficlight.model.DataUID
 import com.leekleak.trafficlight.model.DataUIDApp
 import com.leekleak.trafficlight.model.search
-import com.leekleak.trafficlight.ui.overview.AppSelector
+import com.leekleak.trafficlight.ui.plans.AppSelector
 import com.leekleak.trafficlight.ui.theme.card
 import com.leekleak.trafficlight.ui.theme.historyItemFont
 import com.leekleak.trafficlight.util.PageTitle
@@ -124,6 +123,7 @@ fun History(paddingValues: PaddingValues) {
 
     val usage: List<ScrollableBarData> by viewModel.usageFlow.collectAsState()
     val sidePadding = remember(paddingValues) { paddingValues.calculateLeftPadding(LayoutDirection.Ltr) }
+    val listContentPadding = PaddingValues(sidePadding, sidePadding, sidePadding, paddingValues.calculateBottomPadding())
 
     val usageQueries by viewModel.queryFlow.collectAsState()
     val listParam by viewModel.listParamFlow.collectAsState()
@@ -210,16 +210,13 @@ fun History(paddingValues: PaddingValues) {
                 }
             }
         }
-        if (listParam == ListParam.AppList) AppList(sidePadding, paddingValues)
-        else HourList(sidePadding, paddingValues)
+        if (listParam == ListParam.AppList) AppList(listContentPadding)
+        else HourList(listContentPadding)
     }
 }
 
 @Composable
-private fun AppList(
-    sidePadding: Dp,
-    paddingValues: PaddingValues,
-) {
+private fun AppList(paddingValues: PaddingValues) {
     val viewModel: HistoryVM = koinViewModel()
     val context = LocalContext.current
 
@@ -234,7 +231,7 @@ private fun AppList(
             .clip(MaterialTheme.shapes.large)
             .background(colorScheme.surfaceContainer)
             .fillMaxSize(),
-        contentPadding = PaddingValues(sidePadding, sidePadding, sidePadding, paddingValues.calculateBottomPadding()),
+        contentPadding = paddingValues,
         verticalArrangement = Arrangement.spacedBy(6.dp),
         state = listState
     ) {
@@ -257,10 +254,7 @@ private fun AppList(
 }
 
 @Composable
-private fun HourList(
-    sidePadding: Dp,
-    paddingValues: PaddingValues,
-) {
+private fun HourList(paddingValues: PaddingValues) {
     val viewModel: HistoryVM = koinViewModel()
     val context = LocalContext.current
 
@@ -283,7 +277,7 @@ private fun HourList(
             .clip(MaterialTheme.shapes.large)
             .background(colorScheme.surfaceContainer)
             .fillMaxSize(),
-        contentPadding = PaddingValues(sidePadding, sidePadding, sidePadding, paddingValues.calculateBottomPadding()),
+        contentPadding = paddingValues,
         verticalArrangement = Arrangement.spacedBy(6.dp),
         state = listState
     ) {

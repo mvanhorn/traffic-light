@@ -1,0 +1,182 @@
+package com.leekleak.trafficlight.ui.plans
+
+import androidx.activity.compose.LocalActivity
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.snapping.SnapPosition
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PageSize
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleResumeEffect
+import com.leekleak.trafficlight.R
+import com.leekleak.trafficlight.database.AppPreferenceRepo
+import com.leekleak.trafficlight.database.DataPlanDao
+import com.leekleak.trafficlight.ui.navigation.Navigator
+import com.leekleak.trafficlight.ui.navigation.PlanConfigKey
+import com.leekleak.trafficlight.ui.overview.OverviewVM
+import com.leekleak.trafficlight.ui.theme.card
+import com.leekleak.trafficlight.util.PageTitle
+import com.leekleak.trafficlight.util.openLink
+import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
+
+@Composable
+fun DataPlans(
+    paddingValues: PaddingValues,
+) {
+    val viewModel: OverviewVM = koinViewModel()
+    val navigator: Navigator = koinInject()
+
+    LifecycleResumeEffect(Unit) {
+        viewModel.refresh()
+        onPauseOrDispose {}
+    }
+
+    val paddingSide = paddingValues.calculateLeftPadding(LayoutDirection.Ltr)
+    val paddingTop = paddingValues.calculateTopPadding()
+    val paddingBottom = paddingValues.calculateBottomPadding()
+    val listContentPadding = PaddingValues(paddingSide, paddingSide, paddingSide, paddingBottom)
+
+    PageTitle(false, null, stringResource(R.string.data_plans))
+
+    Column(
+        modifier = Modifier.padding(top = paddingTop),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        DataPlanPager(paddingSide + 8.dp, navigator)
+        DataPlanInsights(listContentPadding)
+    }
+}
+
+@Composable
+private fun DataPlanPager(
+    horizontalPadding: Dp,
+    navigator: Navigator,
+) {
+    val dataPlanDao: DataPlanDao = koinInject()
+    val appPreferenceRepo: AppPreferenceRepo = koinInject()
+
+    val activity = LocalActivity.current
+    val scope = rememberCoroutineScope()
+
+    val activePlans by remember { dataPlanDao.getActivePlansFlow() }.collectAsState(listOf())
+    val shizukuHint by remember { appPreferenceRepo.shizukuHint }.collectAsState(false)
+    val shizukuTracking by remember { appPreferenceRepo.shizukuTracking }.collectAsState(true)
+
+    val pagerState = rememberPagerState(pageCount = {
+        activePlans.size + if (shizukuHint && !shizukuTracking) 1 else 0
+    })
+    HorizontalPager(
+        state = pagerState,
+        contentPadding = PaddingValues(vertical = 8.dp, horizontal = horizontalPadding),
+        pageSpacing = horizontalPadding / 2,
+        snapPosition = SnapPosition.Center,
+        pageSize = PageSize.Fill
+    ) { page ->
+        if (page < activePlans.size) {
+            val plan = activePlans[page]
+            if (plan.dataMax != 0L) {
+                ConfiguredDataPlan(plan) {
+                    navigator.goTo(PlanConfigKey(plan))
+                }
+            } else {
+                UnconfiguredDataPlan(plan) {
+                    navigator.goTo(PlanConfigKey(plan))
+                }
+            }
+        } else {
+            Column(
+                modifier = Modifier.height(200.dp)
+                    .card()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.End
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(painterResource(R.drawable.warning), "Icon")
+                    Text(modifier = Modifier.fillMaxWidth(), fontWeight = FontWeight.Bold, text = stringResource(R.string.shizuku_hint))
+                }
+                Text(modifier = Modifier.fillMaxWidth(), text = stringResource(R.string.shizuku_hint_description))
+                Row(
+                    modifier = Modifier.fillMaxHeight(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.Bottom
+                ) {
+                    Button(
+                        colors = ButtonDefaults.filledTonalButtonColors(),
+                        shape = MaterialTheme.shapes.large,
+                        onClick = {
+                            openLink(
+                                activity,
+                                "https://github.com/leekleak/traffic-light/wiki/Setting-up-Shizuku-for-multi%E2%80%90SIM-tracking"
+                            )
+                        },
+                    ) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Icon(painterResource(R.drawable.help), null)
+                            Text(stringResource(R.string.help))
+                        }
+                    }
+                    Button(
+                        onClick = { scope.launch { appPreferenceRepo.setShizukuHint(false) } }
+                    ) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Icon(painterResource(R.drawable.close), null)
+                            Text(stringResource(R.string.close))
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DataPlanInsights(contentPadding: PaddingValues) {
+    val listState = rememberLazyListState()
+    LazyColumn(
+        modifier = Modifier
+            .padding(top = 8.dp)
+            .clip(MaterialTheme.shapes.large)
+            .background(colorScheme.surfaceContainer)
+            .fillMaxSize(),
+        contentPadding = contentPadding,
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+        state = listState
+    ) {
+
+    }
+}

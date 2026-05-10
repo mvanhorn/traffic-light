@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
 
-package com.leekleak.trafficlight.ui.overview
+package com.leekleak.trafficlight.ui.plans
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

@@ -37,7 +37,7 @@ import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.database.AppPreferenceRepo
 import com.leekleak.trafficlight.model.PermissionManager
 import com.leekleak.trafficlight.ui.navigation.Navigator
-import com.leekleak.trafficlight.ui.navigation.NotificationSettings
+import com.leekleak.trafficlight.ui.navigation.NotificationSettingsKey
 import com.leekleak.trafficlight.ui.theme.Theme
 import com.leekleak.trafficlight.ui.theme.card
 import com.leekleak.trafficlight.util.CategoryTitleSmallText
@@ -125,7 +125,7 @@ fun Settings(paddingValues: PaddingValues) {
                 NavigatePreference(
                     title = stringResource(R.string.advanced_settings),
                     icon = painterResource(R.drawable.notification_settings),
-                    onClick = { navigator.goTo(NotificationSettings) }
+                    onClick = { navigator.goTo(NotificationSettingsKey) }
                 )
             }
         }

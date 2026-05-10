@@ -33,8 +33,8 @@ import androidx.compose.ui.unit.dp
 import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.model.PermissionManager
 import com.leekleak.trafficlight.ui.navigation.Navigator
-import com.leekleak.trafficlight.ui.navigation.Overview
-import com.leekleak.trafficlight.ui.navigation.Settings
+import com.leekleak.trafficlight.ui.navigation.OverviewKey
+import com.leekleak.trafficlight.ui.navigation.SettingsKey
 import com.leekleak.trafficlight.util.PageTitle
 import org.koin.compose.koinInject
 
@@ -47,13 +47,13 @@ fun UsagePermissionRequest(paddingValues: PaddingValues) {
     val usagePermission by permissionManager.usagePermissionFlow.collectAsState()
 
     LaunchedEffect(usagePermission) {
-        if (usagePermission) navigator.setTo(Overview)
+        if (usagePermission) navigator.setTo(OverviewKey)
     }
 
     PageTitle(false, null, "") {
         IconButton(
             modifier = Modifier.align(Alignment.TopEnd),
-            onClick = { navigator.goTo(Settings) }
+            onClick = { navigator.goTo(SettingsKey) }
         ) {
             Icon(
                 painterResource(R.drawable.settings),

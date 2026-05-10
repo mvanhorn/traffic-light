@@ -2,6 +2,7 @@ package com.leekleak.trafficlight.ui.navigation
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -11,7 +12,6 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -50,7 +50,8 @@ import androidx.navigation3.ui.NavDisplay
 import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.ui.history.History
 import com.leekleak.trafficlight.ui.overview.Overview
-import com.leekleak.trafficlight.ui.overview.PlanConfig
+import com.leekleak.trafficlight.ui.plans.DataPlans
+import com.leekleak.trafficlight.ui.plans.PlanConfig
 import com.leekleak.trafficlight.ui.settings.NotificationSettings
 import com.leekleak.trafficlight.ui.settings.Settings
 import com.leekleak.trafficlight.ui.settings.UsagePermissionRequest
@@ -105,8 +106,9 @@ fun NavigationManager() {
                         modifier = Modifier.navBarShadow(),
                         expanded = true,
                         content = {
-                            NavigationButton(navigator, Overview, stringResource(R.string.overview), R.drawable.overview)
-                            NavigationButton(navigator, History, stringResource(R.string.history), R.drawable.history)
+                            NavigationButton(navigator, OverviewKey, stringResource(R.string.overview), R.drawable.overview)
+                            NavigationButton(navigator, DataPlansKey, "Plans", R.drawable.sim_card)
+                            NavigationButton(navigator, HistoryKey, stringResource(R.string.history), R.drawable.history)
                         },
                     )
                 }
@@ -117,14 +119,15 @@ fun NavigationManager() {
             backStack = navigator.backStack,
             onBack = { navigator.goBack() },
             entryProvider = entryProvider {
-                entry<Blank> { Box(modifier = Modifier.fillMaxSize())}
-                entry<Overview> { Overview(paddingValues) }
-                entry<History> { History(paddingValues) }
-                entry<Settings> { Settings(paddingValues) }
+                entry<BlankKey> { Box(modifier = Modifier.fillMaxSize())}
+                entry<OverviewKey> { Overview(paddingValues) }
+                entry<DataPlansKey> { DataPlans(paddingValues) }
+                entry<HistoryKey> { History(paddingValues) }
+                entry<SettingsKey> { Settings(paddingValues) }
 
-                entry<UsagePermissionRequest> { UsagePermissionRequest(paddingValues) }
-                entry<PlanConfig> { PlanConfig(it.dataPlan) }
-                entry<NotificationSettings> { NotificationSettings(paddingValues) }
+                entry<UsagePermissionRequestKey> { UsagePermissionRequest(paddingValues) }
+                entry<PlanConfigKey> { PlanConfig(it.dataPlan) }
+                entry<NotificationSettingsKey> { NotificationSettings(paddingValues) }
             },
             transitionSpec = {
                 if (backStack.size == 1) fadeIn() togetherWith fadeOut()
@@ -148,6 +151,8 @@ fun NavigationManager() {
 
 @Composable
 fun NavigationButton(navigator: Navigator, route: NavKey, name: String, icon: Int) {
+    val selected = navigator.current == route
+    val horizontalPadding by animateDpAsState(if (selected) 24.dp else 12.dp)
     val haptic = LocalHapticFeedback.current
     Button (
         colors =
@@ -159,15 +164,19 @@ fun NavigationButton(navigator: Navigator, route: NavKey, name: String, icon: In
         onClick = {
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             navigator.setTo(route)
-        }
+        },
+        contentPadding = PaddingValues(vertical = 8.dp, horizontal = horizontalPadding)
     ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        Row {
             Icon(
                 painter = painterResource(icon),
                 contentDescription = route.toString()
             )
             AnimatedVisibility(navigator.current == route) {
-                Text(text = name)
+                Text(
+                    modifier = Modifier.padding(start = 4.dp),
+                    text = name
+                )
             }
         }
     }

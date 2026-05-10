@@ -34,7 +34,7 @@ import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.state.updateAppWidgetState
 import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.database.DataPlanDao
-import com.leekleak.trafficlight.ui.overview.DataPlanSelectorWidget
+import com.leekleak.trafficlight.ui.plans.DataPlanSelectorWidget
 import com.leekleak.trafficlight.ui.theme.Theme
 import com.leekleak.trafficlight.ui.theme.card
 import com.leekleak.trafficlight.util.categoryTitle
