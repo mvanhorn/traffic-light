@@ -7,8 +7,6 @@ import kotlinx.serialization.Serializable
 /**
  * Main screens
  */
-@Serializable
-data object BlankKey : NavKey
 
 @Serializable
 data object OverviewKey : NavKey
@@ -25,7 +23,7 @@ data object SettingsKey : NavKey
 @Serializable
 data object UsagePermissionRequestKey : NavKey
 
-val mainScreens = listOf(BlankKey, OverviewKey, DataPlansKey, HistoryKey)
+val mainScreens = listOf(OverviewKey, DataPlansKey, HistoryKey)
 
 /**
  * Settings

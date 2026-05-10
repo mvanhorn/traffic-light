@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -119,7 +118,6 @@ fun NavigationManager() {
             backStack = navigator.backStack,
             onBack = { navigator.goBack() },
             entryProvider = entryProvider {
-                entry<BlankKey> { Box(modifier = Modifier.fillMaxSize())}
                 entry<OverviewKey> { Overview(paddingValues) }
                 entry<DataPlansKey> { DataPlans(paddingValues) }
                 entry<HistoryKey> { History(paddingValues) }
