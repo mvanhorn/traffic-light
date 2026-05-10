@@ -71,6 +71,7 @@ import com.leekleak.trafficlight.ui.theme.googleSans
 import com.leekleak.trafficlight.util.CategoryTitleText
 import com.leekleak.trafficlight.util.DataSize
 import com.leekleak.trafficlight.util.EqualHeightRow
+import com.leekleak.trafficlight.util.MiniCard
 import com.leekleak.trafficlight.util.PageTitle
 import com.leekleak.trafficlight.util.px
 import dev.chrisbanes.haze.hazeSource
@@ -265,41 +266,26 @@ private fun OverviewHero(scrollState: ScrollState) {
 private fun RowScope.PredictionCard() {
     val viewModel: OverviewVM = koinViewModel()
     val fontFamily = remember { googleSans(weight = 600f) }
-    Column(
-        modifier = Modifier
-            .card()
-            .padding(16.dp)
-            .weight(1f)
-            .fillMaxHeight(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        val prediction by viewModel.prediction.collectAsState()
-        val string = DataSize(prediction).toStringParts(extraPrecision = true)
+    val prediction by viewModel.prediction.collectAsState()
+    val string = DataSize(prediction).toStringParts(extraPrecision = true)
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Icon(
-                painterResource(R.drawable.query_stats),
-                contentDescription = null
-            )
-            Text(stringResource(R.string.prediction))
-        }
-        Row {
-            Text(
-                modifier = Modifier.alignByBaseline(),
-                text = string.first + string.second,
-                fontFamily = fontFamily,
-                fontSize = 24.sp
-            )
-            Text(
-                modifier = Modifier.alignByBaseline(),
-                text = string.third,
-                fontFamily = fontFamily,
-                fontSize = 20.sp
-            )
-        }
+    MiniCard(
+        state = MiniCardState.NEUTRAL,
+        icon = painterResource(R.drawable.query_stats),
+        title = stringResource(R.string.prediction)
+    ) {
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            fontFamily = fontFamily,
+            text = buildAnnotatedString {
+                withStyle(style = SpanStyle(fontSize = 24.sp)) {
+                    append("${string.first}${string.second}")
+                }
+                withStyle(style = SpanStyle(fontSize = 20.sp)) {
+                    append(string.third)
+                }
+            }
+        )
     }
 }
 
@@ -308,43 +294,33 @@ private fun RowScope.TrendCard() {
     val viewModel: OverviewVM = koinViewModel()
     val trend by viewModel.trend.collectAsState()
     val fontFamily = remember { googleSans(weight = 600f) }
-    Column(
-        modifier = Modifier
-            .card()
-            .then(
-                when {
-                    trend > 50 -> Modifier.background(colorScheme.errorContainer)
-                    trend < -25 -> Modifier.background(colorScheme.primaryContainer)
-                    else -> Modifier
-                }
-            )
-            .padding(16.dp)
-            .weight(1f),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Icon(
-                painter = when {
-                    trend > 50 -> painterResource(R.drawable.trending_up)
-                    trend < -25 -> painterResource(R.drawable.trending_down)
-                    else -> painterResource(R.drawable.trending_flat)
-                },
-                contentDescription = null
-            )
-            Text(stringResource(R.string.trend))
-        }
-        Row {
-            Text(
-                modifier = Modifier.alignByBaseline(),
-                text = if (trend < 1000)"%+d%%".format(trend.toInt()) else stringResource(R.string.very_big),
-                fontFamily = fontFamily,
-                fontSize = 24.sp
-            )
-        }
+    val state = when {
+        trend > 50 -> MiniCardState.NEGATIVE
+        trend < -25 -> MiniCardState.POSITIVE
+        else -> MiniCardState.NEUTRAL
     }
+    MiniCard(
+        state = state,
+        icon = when(state) {
+            MiniCardState.NEGATIVE -> painterResource(R.drawable.trending_up)
+            MiniCardState.POSITIVE -> painterResource(R.drawable.trending_down)
+            MiniCardState.NEUTRAL -> painterResource(R.drawable.trending_flat)
+        },
+        title = stringResource(R.string.trend)
+    ) {
+        Text(
+            modifier = Modifier.alignByBaseline(),
+            text = if (trend < 1000)"%+d%%".format(trend.toInt()) else stringResource(R.string.very_big),
+            fontFamily = fontFamily,
+            fontSize = 24.sp
+        )
+    }
+}
+
+enum class MiniCardState {
+    POSITIVE,
+    NEUTRAL,
+    NEGATIVE
 }
 
 @Composable

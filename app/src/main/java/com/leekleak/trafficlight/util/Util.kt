@@ -12,7 +12,9 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -40,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -54,6 +57,8 @@ import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.ui.navigation.Navigator
+import com.leekleak.trafficlight.ui.overview.MiniCardState
+import com.leekleak.trafficlight.ui.theme.card
 import dev.chrisbanes.haze.HazeProgressive
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
@@ -320,4 +325,35 @@ fun EqualHeightRow(
     }
 }
 
+@Composable
+fun RowScope.MiniCard(
+    state: MiniCardState,
+    icon: Painter,
+    title: String,
+    description: @Composable () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .card()
+            .then(
+                when(state) {
+                    MiniCardState.NEGATIVE -> Modifier.background(colorScheme.errorContainer)
+                    MiniCardState.POSITIVE -> Modifier.background(colorScheme.primaryContainer)
+                    MiniCardState.NEUTRAL -> Modifier
+                }
+            )
+            .padding(16.dp)
+            .weight(1f),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(icon, null)
+            Text(title)
+        }
+        description()
+    }
+}
 
