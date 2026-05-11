@@ -223,7 +223,7 @@ class NetworkUsageManager(
         usageQuery2: UsageQuery? = null
     ): Flow<List<ScrollableBarData>> = flow {
         val data: MutableList<ScrollableBarData> = mutableListOf()
-        val range = startDate.toEpochDay()..<endDate.toEpochDay()
+        val range = startDate.toEpochDay() until endDate.toEpochDay()
 
         for (i in range) {
             val now = LocalDate.ofEpochDay(i)

@@ -331,6 +331,7 @@ private fun LazyListScope.thisWeek() {
             ) {
                 BarGraph(
                     data = weekUsage,
+                    showLegend = false,
                     centerLabels = true
                 )
             }

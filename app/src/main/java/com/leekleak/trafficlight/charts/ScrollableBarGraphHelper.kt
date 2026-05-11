@@ -172,10 +172,10 @@ internal class ScrollableBarGraphHelper(
                 strokeWidth = 1.dp.toPx(),
             )
 
-            for (i in 0 until data.size) {
+            for (i in 0..data.size) {
                 val x = xItemSpacing * i + xOffset
-                val yStart = metrics.gridHeight + if (i % 3 == 0) 12 else 6
-                val yEnd = metrics.gridHeight - if (i % 3 == 0) 12 else 6
+                val yStart = metrics.gridHeight + if (i == 0 || i == data.size) 12 else 6
+                val yEnd = metrics.gridHeight - if (i == 0 || i == data.size) 12 else 6
                 drawLine(
                     start = Offset(x, yStart),
                     end = Offset(x, yEnd),
@@ -270,16 +270,6 @@ internal class ScrollableBarGraphHelper(
                     drawText(result, color, textOffset)
                 }
             }
-
-            val xPos = xItemSpacing * data.size + xOffset
-
-            drawLine(
-                start = Offset(xPos, metrics.gridHeight + 12),
-                end = Offset(xPos, metrics.gridHeight - 12),
-                color = color,
-                alpha = 0.5f,
-                strokeWidth = 1.dp.toPx(),
-            )
         }
     }
     internal fun drawBars(cornerRadius: CornerRadius) {

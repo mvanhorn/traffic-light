@@ -47,12 +47,13 @@ internal class BarGraphHelper(
     private val scope: DrawScope,
     private val yAxisData: List<Pair<Long, Long>>,
     private val xAxisData: List<String>,
+    private val showLegend: Boolean,
     private val stretch: List<Animatable<Float, *>>
 ) {
     internal val metrics = scope.buildMetrics()
 
     private fun DrawScope.buildMetrics(): BarGraphMetrics {
-        val yAxisPadding: Dp = 36.dp
+        val yAxisPadding: Dp = if (showLegend) 36.dp else 0.dp
         val paddingBottom: Dp = 20.dp
 
         val gridHeight = size.height - paddingBottom.toPx()
@@ -130,7 +131,7 @@ internal class BarGraphHelper(
         scope.run {
             drawLine(
                 start = Offset(0f, 0f),
-                end = Offset(metrics.gridWidth, 0f),
+                end = Offset(size.width - 36.sp.toPx(), 0f),
                 color = color,
                 strokeWidth = 1.dp.toPx(),
                 pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f))
@@ -143,13 +144,11 @@ internal class BarGraphHelper(
                 strokeWidth = 1.dp.toPx(),
             )
 
-            for (i in 0 until yAxisData.size) {
+            for (i in 0..yAxisData.size) {
                 val x = metrics.xItemSpacing * i
-                val yStart = metrics.gridHeight + if (i % 3 == 0) 12 else 6
-                val yEnd = metrics.gridHeight - if (i % 3 == 0) 12 else 6
                 drawLine(
-                    start = Offset(x, yStart),
-                    end = Offset(x, yEnd),
+                    start = Offset(x, metrics.gridHeight + 12),
+                    end = Offset(x, metrics.gridHeight - 12),
                     color = color,
                     strokeWidth = 1.dp.toPx(),
                 )
@@ -209,23 +208,13 @@ internal class BarGraphHelper(
                 )
             }
 
-            val xPos = metrics.xItemSpacing * yAxisData.size
-
-            drawLine(
-                start = Offset(xPos, metrics.gridHeight + 12),
-                end = Offset(xPos, metrics.gridHeight - 12),
-                color = color,
-                alpha = 0.5f,
-                strokeWidth = 1.dp.toPx(),
-            )
-
             //Drawing text labels over the y- axis
             val dataSize = DataSize(getAbsoluteMax(yAxisData))
             val parts = DataSize(dataSize.getComparisonValue()).toStringParts()
 
             drawContext.canvas.nativeCanvas.drawText(
                 parts.first + " " +parts.third,
-                metrics.gridWidth + 4.sp.toPx(),
+                size.width - 32.sp.toPx(),
                 0f + 4.sp.toPx(),
                 paint.apply { textAlign = Paint.Align.LEFT }
             )

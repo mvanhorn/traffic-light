@@ -88,7 +88,7 @@ private fun BarGraphImpl(
     val barAnimationSqueeze = remember(yAxisData.size) { List(yAxisData.size * 2) { Animatable(0f) } }
     val barAnimation = remember(yAxisData.size) { List(yAxisData.size) { Animatable(0f) } }
     LaunchedEffect(yAxisData) {
-        for (i in 0..<barAnimation.size) {
+        for (i in 0 until barAnimation.size) {
             launch {
                 if (yAxisData[i].second + yAxisData[i].first != 0L) {
                     delay(100)
@@ -150,7 +150,7 @@ private fun BarGraphImpl(
                     scope.launch {
                         legendAnimator(offset, wifiOffset, wifiAnimation, wifiLegendStrength)
                         legendAnimator(offset, cellularOffset, cellularAnimation, cellularLegendStrength)
-                        for (i in 0..<barOffset.size) {
+                        for (i in 0 until barOffset.size) {
                             barAnimator(offset, barOffset[i], i, barAnimationSqueeze[i])
                         }
                     }
@@ -161,6 +161,7 @@ private fun BarGraphImpl(
             scope = this,
             yAxisData = yAxisData,
             xAxisData = xAxisData,
+            showLegend = showLegend,
             stretch = barAnimation
         )
 
