@@ -132,4 +132,10 @@ dependencies {
     implementation(libs.haze)
     implementation(libs.haze.materials)
     "playImplementation"(project(":playIntegration"))
+
+    testImplementation(libs.junit)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.turbine)
+    testImplementation(libs.robolectric)
 }

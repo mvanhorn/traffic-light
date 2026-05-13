@@ -33,6 +33,10 @@ espressoCore = "3.7.0"
 appcompat = "1.7.1"
 material = "1.13.0"
 datastoreCore = "1.2.1"
+mockk = "1.14.9"
+kotlinxCoroutinesTest = "1.11.0"
+turbine = "1.2.1"
+robolectric = "4.16.1"
 
 [libraries]
 
@@ -97,6 +101,10 @@ androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-co
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-datastore-core = { group = "androidx.datastore", name = "datastore-core", version.ref = "datastoreCore" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
+turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
