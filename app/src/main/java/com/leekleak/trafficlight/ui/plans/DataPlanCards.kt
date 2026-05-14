@@ -140,7 +140,7 @@ private fun BoxBackground(
         .background(MaterialTheme.colorScheme.surface)
         .clip(MaterialTheme.shapes.medium)
         .clickable { onClick() }
-        .border(2.dp, MaterialTheme.colorScheme.primaryContainer, MaterialTheme.shapes.medium)
+        .border(2.dp, MaterialTheme.colorScheme.primary, MaterialTheme.shapes.medium)
         .padding(8.dp)
     ) {
         background?.let { background ->
