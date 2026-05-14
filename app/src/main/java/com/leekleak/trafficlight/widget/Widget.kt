@@ -92,10 +92,10 @@ class Widget: GlanceAppWidget() {
             val mutable = prefs.toMutablePreferences()
 
             if (
-                mutable[LAST_USAGE] == usageString &&
-                mutable[LAST_MAX] == quotaString &&
-                mutable[BACKGROUND] == dataPlan.uiBackground &&
-                mutable[FORCE_REFRESH] != true
+                (mutable[LAST_USAGE] == usageString) &&
+                (mutable[LAST_MAX] == quotaString) &&
+                (mutable[BACKGROUND] == dataPlan.uiBackground) &&
+                (mutable[FORCE_REFRESH] != true)
             ) {
                 Timber.i("Skipping widget refresh")
                 mutable
@@ -115,23 +115,19 @@ class Widget: GlanceAppWidget() {
         Timber.i("Updating widget")
         provideContent {
             GlanceTheme {
-                if (dataPlan.dataMax != 0L) {
-                    WidgetContent(
-                        dataPlan = dataPlan,
-                        simNumber = currentState(SIM_NUMBER) ?: 0,
-                        carrierName = currentState(CARRIER_NAME) ?: "",
-                        usageString = usageString,
-                        quotaString = quotaString,
-                        progress = usageSize / max(dataMax, 1.0),
-                        resetString = dataPlan.resetString(context)
-                    )
-                } else {
-                    UnconfiguredWidgetContent(
-                        dataPlan = dataPlan,
-                        simNumber = currentState(SIM_NUMBER) ?: 0,
-                        carrierName = currentState(CARRIER_NAME) ?: "",
-                        usageString = usageString,
-                    )
+                BoxBackground(dataPlan, currentState(SIM_NUMBER) ?: 0, currentState(CARRIER_NAME) ?: "") {
+                    if (dataPlan.dataMax != 0L) {
+                        ConfiguredWidgetContent(
+                            usageString = usageString,
+                            quotaString = quotaString,
+                            progress = usageSize / max(dataMax, 1.0),
+                            resetString = dataPlan.resetString(context)
+                        )
+                    } else {
+                        UnconfiguredWidgetContent(
+                            usageString = usageString,
+                        )
+                    }
                 }
             }
         }
@@ -149,123 +145,124 @@ class Widget: GlanceAppWidget() {
     @Composable
     @Preview(widthDp = 400, heightDp = 200)
     private fun Preview() {
-        WidgetContent(
+        BoxBackground(
             dataPlan = DataPlan("", "", uiBackground = 2),
             simNumber = 1,
-            carrierName = "AT&T",
-            usageString = "8.5",
-            quotaString = "20",
-            progress = 8.5 / 20.0,
-            resetString = "Resets in 8 days"
-        )
+            carrierName = "AT&T"
+        ) {
+            ConfiguredWidgetContent(
+                usageString = "8.5",
+                quotaString = "20",
+                progress = 8.5 / 20.0,
+                resetString = "Resets in 8 days"
+            )
+        }
     }
 
     @Composable
-    private fun WidgetContent(
-        dataPlan: DataPlan,
-        simNumber: Int,
-        carrierName: String,
+    private fun ConfiguredWidgetContent(
         usageString: String,
         quotaString: String,
         progress: Double,
         resetString: String
     ) {
-        val cornerRadius = 24.dp
         Column(
-            modifier = GlanceModifier
-                .background(GlanceTheme.colors.primaryContainer)
-                .padding(1.5.dp)
-                .cornerRadius(cornerRadius)
-                .clickable(actionStartActivity<MainActivity>()),
+            modifier = GlanceModifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Box(
-                modifier = GlanceModifier
-                    .background(GlanceTheme.colors.surface)
-                    .cornerRadius(cornerRadius)
+            Row(
+                modifier = GlanceModifier.padding(bottom = 8.dp),
+                verticalAlignment = Alignment.Bottom,
             ) {
-                backgrounds[dataPlan.uiBackground]?.let { background ->
-                    Image(
-                        modifier = GlanceModifier.fillMaxSize(),
-                        provider = ImageProvider(background),
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        colorFilter = ColorFilter.tint(GlanceTheme.colors.primaryContainer)
-                    )
-                }
-                Row(GlanceModifier.padding(12.dp).fillMaxWidth()) {
-                    SimIcon(simNumber)
-                    Text(
-                        modifier = GlanceModifier.fillMaxWidth().defaultWeight(),
-                        text = carrierName,
-                        style = TextStyle(
-                            color = GlanceTheme.colors.onSurface,
-                            textAlign = TextAlign.End
-                        )
-                    )
-                }
-                Column(
-                    modifier = GlanceModifier.fillMaxSize(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Row(
-                        modifier = GlanceModifier.padding(bottom = 8.dp),
-                        verticalAlignment = Alignment.Bottom,
-                    ) {
-                        Text(
-                            text = usageString,
-                            style = TextStyle(
-                                color = GlanceTheme.colors.onSurface,
-                                fontSize = 64.sp,
-                            ),
-                        )
-                        Text(
-                            text = "/${quotaString}GB",
-                            style = TextStyle(
-                                color = GlanceTheme.colors.onSurface,
-                                fontSize = 36.sp,
-                            ),
-                        )
-                    }
-                }
-                Column(
-                    modifier = GlanceModifier.fillMaxSize().padding(16.dp),
-                    verticalAlignment = Alignment.Bottom,
-                ) {
-                    Text(
-                        modifier = GlanceModifier.fillMaxWidth().padding(bottom = 8.dp),
-                        text = resetString,
-                        style = TextStyle(
-                            color = GlanceTheme.colors.onSurface,
-                            fontSize = 16.sp,
-                            textAlign = TextAlign.Center
-                        ),
-                    )
-                    LinearProgressIndicator(
-                        modifier = GlanceModifier
-                            .height(4.dp)
-                            .fillMaxWidth(),
-                        color = GlanceTheme.colors.primary,
-                        backgroundColor = GlanceTheme.colors.primaryContainer,
-                        progress = progress.toFloat(),
-                    )
-                }
+                Text(
+                    text = usageString,
+                    style = TextStyle(
+                        color = GlanceTheme.colors.onSurface,
+                        fontSize = 64.sp,
+                    ),
+                )
+                Text(
+                    text = "/${quotaString}GB",
+                    style = TextStyle(
+                        color = GlanceTheme.colors.onSurface,
+                        fontSize = 36.sp,
+                    ),
+                )
             }
+        }
+        Column(
+            modifier = GlanceModifier.fillMaxSize().padding(16.dp),
+            verticalAlignment = Alignment.Bottom,
+        ) {
+            Text(
+                modifier = GlanceModifier.fillMaxWidth().padding(bottom = 8.dp),
+                text = resetString,
+                style = TextStyle(
+                    color = GlanceTheme.colors.onSurface,
+                    fontSize = 16.sp,
+                    textAlign = TextAlign.Center
+                ),
+            )
+            LinearProgressIndicator(
+                modifier = GlanceModifier
+                    .height(4.dp)
+                    .fillMaxWidth(),
+                color = GlanceTheme.colors.primary,
+                backgroundColor = GlanceTheme.colors.primaryContainer,
+                progress = progress.toFloat(),
+            )
         }
     }
 
     @Composable
-    private fun UnconfiguredWidgetContent(
+    private fun UnconfiguredWidgetContent(usageString: String) {
+        Column(
+            modifier = GlanceModifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(
+                modifier = GlanceModifier.padding(bottom = 8.dp),
+                verticalAlignment = Alignment.Bottom,
+            ) {
+                Text(
+                    text = usageString,
+                    style = TextStyle(
+                        color = GlanceTheme.colors.onSurface,
+                        fontSize = 64.sp,
+                    ),
+                )
+                Text(
+                    text = "GB",
+                    style = TextStyle(
+                        color = GlanceTheme.colors.onSurface,
+                        fontSize = 36.sp,
+                    ),
+                )
+            }
+            Text(
+                text = LocalContext.current.getString(R.string.this_month),
+                style = TextStyle(
+                    color = GlanceTheme.colors.onSurface,
+                    fontSize = 18.sp,
+                ),
+            )
+        }
+    }
+
+    @Composable
+    private fun BoxBackground(
         dataPlan: DataPlan,
         simNumber: Int,
         carrierName: String,
-        usageString: String,
+        content: @Composable (() -> Unit)
     ) {
         val cornerRadius = 24.dp
-        Column(
+        Box(
             modifier = GlanceModifier
-                .background(GlanceTheme.colors.primaryContainer)
-                .padding(1.5.dp)
+                .background(GlanceTheme.colors.primary)
+                .padding(2.dp)
                 .cornerRadius(cornerRadius)
                 .clickable(actionStartActivity<MainActivity>()),
         ) {
@@ -294,38 +291,7 @@ class Widget: GlanceAppWidget() {
                         )
                     )
                 }
-                Column(
-                    modifier = GlanceModifier.fillMaxSize(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Row(
-                        modifier = GlanceModifier.padding(bottom = 8.dp),
-                        verticalAlignment = Alignment.Bottom,
-                    ) {
-                        Text(
-                            text = usageString,
-                            style = TextStyle(
-                                color = GlanceTheme.colors.onSurface,
-                                fontSize = 64.sp,
-                            ),
-                        )
-                        Text(
-                            text = "GB",
-                            style = TextStyle(
-                                color = GlanceTheme.colors.onSurface,
-                                fontSize = 36.sp,
-                            ),
-                        )
-                    }
-                    Text(
-                        text = LocalContext.current.getString(R.string.this_month),
-                        style = TextStyle(
-                            color = GlanceTheme.colors.onSurface,
-                            fontSize = 18.sp,
-                        ),
-                    )
-                }
+                content()
             }
         }
     }

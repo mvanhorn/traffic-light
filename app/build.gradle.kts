@@ -91,7 +91,6 @@ dependencies {
     implementation(libs.koin.compose.navigation3)
     implementation(libs.androidx.compose.adaptive)
 
-    implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.lifecycle.service)
 
     implementation(libs.androidx.navigation3.ui)
@@ -109,8 +108,6 @@ dependencies {
     ksp(libs.androidx.room.compiler)
 
     implementation(libs.androidx.glance.appwidget)
-    implementation(libs.androidx.glance.material3)
-    implementation(libs.androidx.glance.appwidget.preview)
     implementation(libs.androidx.glance.preview)
 
     /**
