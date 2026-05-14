@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import com.leekleak.trafficlight.BuildConfig
 import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.database.AppPreferenceRepo
+import com.leekleak.trafficlight.integrations.ShizukuServicesProvider
 import com.leekleak.trafficlight.model.PermissionManager
 import com.leekleak.trafficlight.ui.navigation.Navigator
 import com.leekleak.trafficlight.ui.navigation.NotificationSettingsKey
@@ -50,13 +51,13 @@ import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
-import rikka.shizuku.Shizuku
 
 @Composable
 fun Settings(paddingValues: PaddingValues) {
     val viewModel: SettingsVM = koinViewModel()
     val appPreferenceRepo: AppPreferenceRepo = koinInject()
     val permissionManager: PermissionManager = koinInject()
+    val shizukuServicesProvider: ShizukuServicesProvider = koinInject()
     val navigator: Navigator = koinInject()
     val activity = LocalActivity.current
     val scope = rememberCoroutineScope()
@@ -149,7 +150,7 @@ fun Settings(paddingValues: PaddingValues) {
                                 appPreferenceRepo.setShizukuTracking(it)
                             }
                         } else {
-                            Shizuku.requestPermission(12199)
+                            shizukuServicesProvider.shizukuRequestPermission()
                         }
                     },
                 )

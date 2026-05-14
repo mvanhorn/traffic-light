@@ -63,7 +63,6 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
-        aidl = true
     }
     dependenciesInfo {
         // Disables dependency metadata when building APKs.
@@ -105,9 +104,6 @@ dependencies {
 
     implementation(libs.coil.compose)
 
-    implementation(libs.shizuku.api)
-    implementation(libs.shizuku.provider)
-
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
@@ -132,6 +128,7 @@ dependencies {
     implementation(libs.haze)
     implementation(libs.haze.materials)
     "playImplementation"(project(":playIntegration"))
+    "fullImplementation"(project(":shizukuIntegration"))
 
     testImplementation(libs.junit)
     testImplementation(libs.mockk)

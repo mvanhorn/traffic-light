@@ -1,9 +1,8 @@
-package com.leekleak.trafficlight.services
+package com.leekleak.shizukuintegration
 
 import android.os.Parcel
 import android.telephony.SubscriptionInfo
 import androidx.core.text.isDigitsOnly
-import com.leekleak.trafficlight.ITrafficLightShizukuService
 import rikka.shizuku.SystemServiceHelper
 import timber.log.Timber
 import java.lang.reflect.Field

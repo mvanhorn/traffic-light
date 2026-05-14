@@ -16,7 +16,6 @@ import com.leekleak.trafficlight.ui.viewModelModule
 import com.leekleak.trafficlight.widget.startAlarmManager
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.GlobalContext.startKoin
-import rikka.shizuku.shared.BuildConfig
 import timber.log.Timber
 
 class TrafficLightApplication : Application() {

@@ -1,4 +1,4 @@
-package com.leekleak.trafficlight;
+package com.leekleak.shizukuintegration;
 
 interface ITrafficLightShizukuService {
     void destroy() = 16777114;

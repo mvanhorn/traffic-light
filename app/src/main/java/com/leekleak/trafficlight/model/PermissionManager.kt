@@ -12,12 +12,20 @@ import android.os.PowerManager
 import android.os.Process.myUid
 import android.provider.Settings
 import androidx.core.net.toUri
+import com.leekleak.trafficlight.database.AppPreferenceRepo
+import com.leekleak.trafficlight.integrations.ShizukuServicesProvider
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import rikka.shizuku.Shizuku
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.launch
 
 class PermissionManager(
     private val context: Context,
+    scope: CoroutineScope,
+    appPreferenceRepo: AppPreferenceRepo,
+    private val shizukuServicesProvider: ShizukuServicesProvider
 ) {
     private val _backgroundPermission = MutableStateFlow(false)
     val backgroundPermissionFlow = _backgroundPermission.asStateFlow()
@@ -33,6 +41,25 @@ class PermissionManager(
 
     private val _shizukuPermission = MutableStateFlow(false)
     val shizukuPermissionFlow = _shizukuPermission.asStateFlow()
+
+    init {
+        scope.launch {
+            combine(
+                appPreferenceRepo.shizukuTracking,
+                shizukuPermissionFlow,
+                shizukuRunningFlow
+            ) {
+                setting, permission, running ->
+                return@combine Triple(setting, permission, running)
+            }.collectLatest { (setting, permission, running) ->
+                if (setting && permission && running) {
+                    shizukuServicesProvider.enable()
+                } else if (!setting) {
+                    shizukuServicesProvider.disable()
+                }
+            }
+        }
+    }
 
     fun askBackgroundPermission(activity: Activity?) {
         activity?.startActivity(
@@ -88,9 +115,9 @@ class PermissionManager(
             true
         }
 
-        _shizukuRunning.value = Shizuku.pingBinder()
+        _shizukuRunning.value = shizukuServicesProvider.shizukuRunning()
         if (_shizukuRunning.value) {
-            _shizukuPermission.value = Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
+            _shizukuPermission.value = shizukuServicesProvider.shizukuPermission() == PackageManager.PERMISSION_GRANTED
         }
     }
 }
