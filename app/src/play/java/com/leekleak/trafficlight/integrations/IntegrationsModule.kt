@@ -5,5 +5,5 @@ import org.koin.dsl.module
 
 val integrationsModule = module {
     includes(playModule)
-    single<PlayServicesProvider> { PlayServicesProviderImpl() }
+    single<PlayServicesProvider> { PlayServicesProviderImpl(get()) }
 }
