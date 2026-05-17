@@ -47,7 +47,7 @@ class NotificationIconHelper(private val context: Context) {
 
         bitmapMutex.withLock {
             if (bitmap == null || bitmap!!.height != height) {
-                bitmap = createBitmap(height, height, Bitmap.Config.ALPHA_8)
+                bitmap = createBitmap(height, height, Bitmap.Config.ARGB_8888)
             } else {
                 bitmap?.eraseColor(Color.TRANSPARENT)
             }
@@ -74,7 +74,7 @@ class NotificationIconHelper(private val context: Context) {
             if (speed.count(Char::isDigit) == 1) {
                 cachedIcons.put(
                     iconTag,
-                    IconCompat.createWithBitmap(bitmap!!.copy(Bitmap.Config.ALPHA_8, false)),
+                    IconCompat.createWithBitmap(bitmap!!.copy(Bitmap.Config.ARGB_8888, false)),
                 )
                 return cachedIcons[iconTag]!!
             } else {

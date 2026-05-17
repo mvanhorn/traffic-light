@@ -1,6 +1,5 @@
 package com.leekleak.trafficlight.services.notifications
 
-import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
@@ -62,13 +61,9 @@ class SpeedNotification(
             appPreferenceRepo.speedBits.collect { inBits = it }
         }
         scope.launch {
-            appPreferenceRepo.liveNotification.collect {
-                liveNotification = it
-            }
+            appPreferenceRepo.liveNotification.collect { liveNotification = it; updateNotification(trafficSnapshot) }
         }
         updateBaseNotification()
-        notification.flags = Notification.FLAG_ONGOING_EVENT or Notification.FLAG_NO_CLEAR
-        notificationManager.notify(notificationId, notification)
     }
 
     override fun start() {
@@ -144,7 +139,6 @@ class SpeedNotification(
             .setContentTitle(title)
             .setContentText(messageShort)
             .build()
-        notification.flags = Notification.FLAG_ONGOING_EVENT or Notification.FLAG_NO_CLEAR
         notificationManager.notify(notificationId, notification)
     }
 
@@ -159,7 +153,7 @@ class SpeedNotification(
         val networkAvailable = isNetworkAvailable()
         val channel = if (networkAvailable) NOTIFICATION_CHANNEL_ID else NOTIFICATION_CHANNEL_ID_SILENT
         notificationBuilder = NotificationCompat.Builder(context, channel)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.notification)
             .setContentTitle(context.getString(R.string.app_name_short))
             .setOngoing(true)
             .setRequestPromotedOngoing(liveNotification)

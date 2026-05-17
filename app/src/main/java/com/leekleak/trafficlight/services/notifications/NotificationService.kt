@@ -16,8 +16,6 @@ import org.koin.core.parameter.parametersOf
 import timber.log.Timber
 import java.util.Collections
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.concurrent.atomics.AtomicBoolean
-import kotlin.concurrent.atomics.ExperimentalAtomicApi
 
 class NotificationService : LifecycleService() {
     private val appPreferenceRepo: AppPreferenceRepo by inject()
@@ -52,7 +50,6 @@ class NotificationService : LifecycleService() {
                 if (enabled) {
                     val id = notificationIDCounter.getAndIncrement()
                     val notif = get<SpeedNotification> { parametersOf(lifecycleScope, id) }
-                    notif.start()
                     activeNotifications.add(notif)
                     updateForegroundNotification()
                 } else {
@@ -74,7 +71,6 @@ class NotificationService : LifecycleService() {
 
                     val id = notificationIDCounter.getAndIncrement()
                     val notif = get<PlanNotification> { parametersOf(lifecycleScope, id, plan) }
-                    notif.start()
                     activeNotifications.add(notif)
                     updateForegroundNotification()
                 }
@@ -89,11 +85,9 @@ class NotificationService : LifecycleService() {
         }
     }
 
-    @OptIn(ExperimentalAtomicApi::class)
     override fun onDestroy() {
         super.onDestroy()
         unregisterReceiver(screenStateReceiver)
-        running.exchange(false)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -106,31 +100,29 @@ class NotificationService : LifecycleService() {
     fun updateForegroundNotification() {
         if (activeNotifications.contains(foregroundNotification)) return
         val firstNotification = activeNotifications.firstOrNull()
+
         if (firstNotification != null) {
             try {
                 Timber.i("Starting foreground service")
                 firstNotification.startForeground(this)
+                firstNotification.start()
                 foregroundNotification = firstNotification
             } catch (e: Exception) {
                 Timber.e("Failed to start foreground service: $e")
             }
-        } else {
+        } else if (foregroundNotification != null) {
             stopForeground(STOP_FOREGROUND_REMOVE)
+            foregroundNotification = null
         }
     }
 
-    @OptIn(ExperimentalAtomicApi::class)
     companion object {
-        private var running = AtomicBoolean(false)
         fun startService(context: Context, scope: CoroutineScope) {
             scope.launch {
-                if (!running.exchange(true)) {
-                    runCatching {
-                        context.startService(Intent(context, NotificationService::class.java))
-                    }.onFailure {
-                        running.exchange(false)
-                        Timber.e(it)
-                    }
+                runCatching {
+                    context.startService(Intent(context, NotificationService::class.java))
+                }.onFailure {
+                    Timber.e(it)
                 }
             }
         }
