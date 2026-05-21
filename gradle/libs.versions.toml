@@ -15,6 +15,7 @@ material3 = "1.5.0-alpha19"
 compose-ui = "1.11.1"
 
 nav3Core = "1.1.1"
+ads-mobile-sdk = "1.1.0"
 review = "2.0.2"
 reviewKtx = "2.0.2"
 room = "2.8.4"
@@ -76,6 +77,7 @@ shizuku-provider = { module = "dev.rikka.shizuku:provider", version.ref = "shizu
 # Play Store
 review-ktx = { module = "com.google.android.play:review-ktx", version.ref = "reviewKtx" }
 review = { module = "com.google.android.play:review", version.ref = "review" }
+ads-mobile-sdk = { module = "com.google.android.libraries.ads.mobile.sdk:ads-mobile-sdk", version.ref = "ads-mobile-sdk" }
 
 # Room
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }

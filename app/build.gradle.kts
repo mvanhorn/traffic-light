@@ -125,6 +125,7 @@ dependencies {
     implementation(libs.haze)
     implementation(libs.haze.materials)
     "playImplementation"(project(":playIntegration"))
+    "playImplementation"(libs.ads.mobile.sdk)
     "fullImplementation"(project(":shizukuIntegration"))
 
     testImplementation(libs.junit)
