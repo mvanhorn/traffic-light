@@ -64,6 +64,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.LifecycleResumeEffect
+import com.leekleak.trafficlight.BuildConfig
 import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.charts.AppGraph
 import com.leekleak.trafficlight.charts.BarGraph
@@ -136,7 +137,7 @@ fun Overview(
             HeroItems(scrollState)
             OverviewItems()
         }
-        Ad()
+        Ad(BuildConfig.ADMOB_UNIT_ID_OVERVIEW)
         Box(Modifier.height(paddingBottom - 8.dp))
     }
     PageTitle(false, hazeState, stringResource(R.string.today)) {

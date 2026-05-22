@@ -33,16 +33,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.google.android.libraries.ads.mobile.sdk.MobileAds
 import com.google.android.libraries.ads.mobile.sdk.common.AdChoicesPlacement
 import com.google.android.libraries.ads.mobile.sdk.common.AdChoicesView
 import com.google.android.libraries.ads.mobile.sdk.common.LoadAdError
-import com.google.android.libraries.ads.mobile.sdk.initialization.InitializationConfig
 import com.google.android.libraries.ads.mobile.sdk.nativead.MediaView
 import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd
 import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdLoader
@@ -50,23 +47,17 @@ import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdLoaderCallba
 import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdRequest
 import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdView
 import com.leekleak.trafficlight.ui.theme.card
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 val LocalNativeAdView = compositionLocalOf<NativeAdView?> { null }
 
 @Composable
-fun Ad(adUnitId: String = "/21775744923/example/native") {
-    val context = LocalContext.current
+fun Ad(adUnitId: String) {
     var nativeAdState by remember { mutableStateOf<NativeAd?>(null) }
     var adStatus by remember { mutableStateOf("loading") }
 
     LaunchedEffect(adUnitId) {
-        Timber.d("Initializing MobileAds and loading ad: $adUnitId")
-        withContext(Dispatchers.IO) {
-            MobileAds.initialize(context, InitializationConfig.Builder("ca-app-pub-3940256099942544~3347511713").build())
-        }
+        Timber.d("Loading ad: $adUnitId")
 
         val adRequest = NativeAdRequest.Builder(adUnitId, listOf(NativeAd.NativeAdType.NATIVE))
             .setAdChoicesPlacement(AdChoicesPlacement.TOP_RIGHT)

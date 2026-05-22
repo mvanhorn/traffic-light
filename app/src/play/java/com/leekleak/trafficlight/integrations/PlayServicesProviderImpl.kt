@@ -4,6 +4,7 @@ import android.app.Activity
 import com.google.android.libraries.ads.mobile.sdk.MobileAds
 import com.google.android.libraries.ads.mobile.sdk.initialization.InitializationConfig
 import com.leekleak.play_integration.AppReviewManager
+import com.leekleak.trafficlight.BuildConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -12,8 +13,7 @@ class PlayServicesProviderImpl(
 ): PlayServicesProvider {
     override suspend fun onAppLaunch(activity: Activity) {
         withContext(Dispatchers.IO) {
-            // Test App ID for AdMob
-            MobileAds.initialize(activity, InitializationConfig.Builder("ca-app-pub-3940256099942544~3347511713").build())
+            MobileAds.initialize(activity, InitializationConfig.Builder(BuildConfig.ADMOB_APP_ID).build())
         }
         appReviewManager.onAppLaunch(activity)
     }

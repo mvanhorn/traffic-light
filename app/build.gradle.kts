@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -28,6 +30,7 @@ android {
         versionName = "2.17.1"
         base.archivesName = "$namespace-$versionName"
 
+        manifestPlaceholders["admobAppId"] = "ca-app-pub-3940256099942544~3347511713"
     }
     buildTypes {
         release {
@@ -45,12 +48,25 @@ android {
     }
     flavorDimensions += "version"
     productFlavors {
+        val localProperties = Properties()
+        val localPropertiesFile = rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            localProperties.load(localPropertiesFile.inputStream())
+        }
+
+        val admobAppId = localProperties.getProperty("admob.app.id") ?: "ca-app-pub-3940256099942544~3347511713"
+        val admobUnitIdOverview = localProperties.getProperty("admob.unit.id.overview") ?: "/21775744923/example/native"
+
         create("full") {
             dimension = "version"
             buildConfigField("Boolean", "SHIZUKU", "true")
         }
         create("play") {
+            dimension = "version"
             buildConfigField("Boolean", "SHIZUKU", "false")
+            buildConfigField("String", "ADMOB_APP_ID", "\"$admobAppId\"")
+            buildConfigField("String", "ADMOB_UNIT_ID_OVERVIEW", "\"$admobUnitIdOverview\"")
+            manifestPlaceholders["admobAppId"] = admobAppId
         }
     }
     androidResources {
