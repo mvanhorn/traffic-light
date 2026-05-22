@@ -135,10 +135,12 @@ class SpeedNotification(
                         if (!separateUpDown) {
                             notificationIconHelper.createIcon(speed, unit)
                         } else {
-                            val regex = """(\d+)(?:\.\d+)?\s*([KMGT])B?""".toRegex()
-                            val speedUp = DataSize(trafficSnapshot.upSpeed).toString(inBits = inBits).replace(regex, "$1$2")
-                            val speedDown = DataSize(trafficSnapshot.downSpeed).toString(inBits = inBits).replace(regex, "$1$2")
-                            notificationIconHelper.createIconSeparate(speedUp, speedDown)
+                            val speedUp = DataSize(trafficSnapshot.upSpeed).toStringParts(inBits = inBits)
+                            val speedDown = DataSize(trafficSnapshot.downSpeed).toStringParts(inBits = inBits)
+                            notificationIconHelper.createIconSeparate(
+                                speed1 = "${speedUp.first} ${speedUp.third.substring(0,1)}",
+                                speed2 = "${speedDown.first} ${speedDown.third.substring(0,1)}"
+                            )
                         })
                     setWhen(Long.MAX_VALUE) // Keep above other notifications
                     setShowWhen(false) // Hide timestamp
