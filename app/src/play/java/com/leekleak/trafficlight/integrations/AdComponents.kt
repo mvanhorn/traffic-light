@@ -46,13 +46,17 @@ import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdLoader
 import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdLoaderCallback
 import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdRequest
 import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdView
+import com.leekleak.trafficlight.BuildConfig
 import com.leekleak.trafficlight.ui.theme.card
 import timber.log.Timber
 
 val LocalNativeAdView = compositionLocalOf<NativeAdView?> { null }
 
 @Composable
-fun Ad(adUnitId: String) {
+fun Ad(adLocation: AdLocation) {
+    val adUnitId = when(adLocation) {
+        AdLocation.Overview -> BuildConfig.ADMOB_UNIT_ID_OVERVIEW
+    }
     var nativeAdState by remember { mutableStateOf<NativeAd?>(null) }
     var adStatus by remember { mutableStateOf("loading") }
 

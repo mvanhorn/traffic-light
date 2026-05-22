@@ -64,11 +64,11 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.LifecycleResumeEffect
-import com.leekleak.trafficlight.BuildConfig
 import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.charts.AppGraph
 import com.leekleak.trafficlight.charts.BarGraph
 import com.leekleak.trafficlight.integrations.Ad
+import com.leekleak.trafficlight.integrations.AdLocation
 import com.leekleak.trafficlight.ui.navigation.Navigator
 import com.leekleak.trafficlight.ui.navigation.SettingsKey
 import com.leekleak.trafficlight.ui.theme.card
@@ -137,7 +137,7 @@ fun Overview(
             HeroItems(scrollState)
             OverviewItems()
         }
-        Ad(BuildConfig.ADMOB_UNIT_ID_OVERVIEW)
+        Ad(AdLocation.Overview)
         Box(Modifier.height(paddingBottom - 8.dp))
     }
     PageTitle(false, hazeState, stringResource(R.string.today)) {
