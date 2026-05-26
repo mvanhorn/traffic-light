@@ -52,6 +52,8 @@ import com.leekleak.trafficlight.charts.BarGraph
 import com.leekleak.trafficlight.database.AppPreferenceRepo
 import com.leekleak.trafficlight.database.AppUsage
 import com.leekleak.trafficlight.database.DataPlanDao
+import com.leekleak.trafficlight.integrations.Ad
+import com.leekleak.trafficlight.integrations.AdType
 import com.leekleak.trafficlight.ui.navigation.Navigator
 import com.leekleak.trafficlight.ui.navigation.PlanConfigKey
 import com.leekleak.trafficlight.ui.theme.card
@@ -195,9 +197,12 @@ private fun DataPlanPager(
 @Composable
 private fun DataPlanInsights(contentPadding: PaddingValues) {
     val viewModel: DataPlansVM = koinViewModel()
+    val appPreferenceRepo: AppPreferenceRepo = koinInject()
     val dataPlan by viewModel.selectedDataPlan.collectAsState(null)
     val topAppsList by viewModel.topApps.collectAsState()
     val listState = rememberLazyListState()
+    val adsEnabled by appPreferenceRepo.ads.collectAsState(false)
+
     LazyColumn(
         modifier = Modifier
             .padding(top = 8.dp)
@@ -212,6 +217,7 @@ private fun DataPlanInsights(contentPadding: PaddingValues) {
         dataPlan?.let { plan ->
             if (plan.dataMax > 0) usageInsights()
             thisWeek()
+            if (adsEnabled) item { Ad(AdType.NativeBanner, colorScheme.surface) }
             if (plan.dataMax > 0) budgetInsights()
             if (topAppsList.isNotEmpty()) topApps(topAppsList)
         }

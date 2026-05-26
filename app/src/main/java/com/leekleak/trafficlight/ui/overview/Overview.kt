@@ -68,7 +68,7 @@ import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.charts.AppGraph
 import com.leekleak.trafficlight.charts.BarGraph
 import com.leekleak.trafficlight.integrations.Ad
-import com.leekleak.trafficlight.integrations.AdLocation
+import com.leekleak.trafficlight.integrations.AdType
 import com.leekleak.trafficlight.ui.navigation.Navigator
 import com.leekleak.trafficlight.ui.navigation.SettingsKey
 import com.leekleak.trafficlight.ui.theme.card
@@ -137,7 +137,6 @@ fun Overview(
             HeroItems(scrollState)
             OverviewItems()
         }
-        Ad(AdLocation.Overview)
         Box(Modifier.height(paddingBottom - 8.dp))
     }
     PageTitle(false, hazeState, stringResource(R.string.today)) {
@@ -342,6 +341,7 @@ fun OverviewItems() {
             }
         }
     }
+    Ad(AdType.NativeBanner)
     if (data.isNotEmpty()) {
         CategoryTitleText(stringResource(R.string.this_week))
         Box(

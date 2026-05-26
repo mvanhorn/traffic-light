@@ -6,6 +6,6 @@ interface PlayServicesProvider {
     suspend fun onAppLaunch(activity: Activity)
 }
 
-enum class AdLocation {
-    Overview
+enum class AdType {
+    NativeBanner
 }

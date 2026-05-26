@@ -35,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -61,14 +62,17 @@ import timber.log.Timber
 val LocalNativeAdView = compositionLocalOf<NativeAdView?> { null }
 
 @Composable
-fun Ad(adLocation: AdLocation) {
+fun Ad(
+    adType: AdType,
+    backgroundColor: Color = MaterialTheme.colorScheme.surfaceContainer
+) {
     val appPreferenceRepo: AppPreferenceRepo = koinInject()
     val adsEnabled by appPreferenceRepo.ads.collectAsState(false)
 
     if (!adsEnabled) return
 
-    val adUnitId = when(adLocation) {
-        AdLocation.Overview -> BuildConfig.ADMOB_UNIT_ID_OVERVIEW
+    val adUnitId = when(adType) {
+        AdType.NativeBanner -> BuildConfig.ADMOB_UNIT_ID_OVERVIEW
     }
     var nativeAdState by remember { mutableStateOf<NativeAd?>(null) }
     var adStatus by remember { mutableStateOf("loading") }
@@ -101,21 +105,21 @@ fun Ad(adLocation: AdLocation) {
             adToDestroy?.destroy()
         }
     }
-
+    
     AnimatedContent(
         targetState = adStatus,
         transitionSpec = { fadeIn() togetherWith fadeOut() },
         label = "AdStatus"
     ) { status ->
         when (status) {
-            "loaded" -> nativeAdState?.let { CallNativeAd(it) }
+            "loaded" -> nativeAdState?.let { CallNativeAd(it, backgroundColor) }
             "loading" -> {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(144.dp)
                         .card()
-                        .padding(16.dp),
+                        .background(backgroundColor),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -131,11 +135,15 @@ fun Ad(adLocation: AdLocation) {
 }
 
 @Composable
-fun CallNativeAd(nativeAd: NativeAd) {
+fun CallNativeAd(
+    nativeAd: NativeAd,
+    backgroundColor: Color
+) {
     AndroidView(
         modifier = Modifier
             .fillMaxWidth()
-            .card(),
+            .card()
+            .background(backgroundColor),
         factory = { ctx ->
             NativeAdView(ctx).apply {
                 val composeView = ComposeView(ctx).apply {
