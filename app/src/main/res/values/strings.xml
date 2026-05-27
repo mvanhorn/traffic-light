@@ -115,7 +115,6 @@
     <string name="supporter_ads_description">Enable ADs to support development</string>
     <string name="supporter_ads_disabled">Supporter ADs only supported by Google Play version</string>
     <string name="ad">Ad</string>
-    <string name="loading_ad">Loading Ad...</string>
     <string name="no_browser_found">No browser found</string>
     <plurals name="resets_in_days">
         <item quantity="one">Resets tomorrow</item>
