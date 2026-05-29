@@ -72,19 +72,17 @@ fun Settings(paddingValues: PaddingValues) {
         item {
             val backgroundPermission by permissionManager.backgroundPermissionFlow.collectAsState(true)
 
-            if (!backgroundPermission) {
+            AnimatedVisibility(
+                visible = !backgroundPermission,
+                enter = fadeIn(tween()) + slideInVertically() + expandVertically(),
+                exit = fadeOut(tween()) + slideOutVertically() + shrinkVertically()
+            ) {
                 CategoryTitleSmallText(stringResource(R.string.missing_permissions))
                 PermissionCard(
                     title = stringResource(R.string.battery_optimization),
                     description = stringResource(R.string.battery_optimization_description),
                     icon = painterResource(R.drawable.battery),
-                    actionButton = {
-                        PermissionButton(
-                            icon = painterResource(R.drawable.grant),
-                            contentDescription = stringResource(R.string.grant),
-                            onClick = { permissionManager.askBackgroundPermission(activity) },
-                        )
-                    }
+                    onClick = { permissionManager.askBackgroundPermission(activity) }
                 )
             }
         }
@@ -93,12 +91,25 @@ fun Settings(paddingValues: PaddingValues) {
         item {
             val notification by viewModel.notification.collectAsState()
             val notificationPermission by permissionManager.notificationPermissionFlow.collectAsState(true)
-            val notificationPermissionCallback = rememberLauncherForActivityResult(
-                ActivityResultContracts.RequestPermission()
+            val notificationPermissionCallback = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
+
+            AnimatedVisibility(
+                visible = !notificationPermission,
+                enter = fadeIn(tween()) + slideInVertically() + expandVertically(),
+                exit = fadeOut(tween()) + slideOutVertically() + shrinkVertically()
             ) {
-                scope.launch {
-                    appPreferenceRepo.setNotification(it)
-                }
+                PermissionCard(
+                    title = stringResource(R.string.notification_permission),
+                    description = stringResource(R.string.allow_app_to_send_notifications),
+                    icon = painterResource(R.drawable.notification),
+                    onClick = {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            notificationPermissionCallback.launch(
+                                Manifest.permission.POST_NOTIFICATIONS
+                            )
+                        }
+                    }
+                )
             }
 
             SwitchPreference (
@@ -106,15 +117,10 @@ fun Settings(paddingValues: PaddingValues) {
                 summary = stringResource(R.string.notification_description),
                 icon = painterResource(R.drawable.speed_notification),
                 value = notification,
+                enabled = notificationPermission,
                 onValueChanged = {
-                    if (!notificationPermission && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        notificationPermissionCallback.launch(
-                            Manifest.permission.POST_NOTIFICATIONS
-                        )
-                    } else {
-                        scope.launch {
-                            appPreferenceRepo.setNotification(it)
-                        }
+                    scope.launch {
+                        appPreferenceRepo.setNotification(it)
                     }
                 },
             )
@@ -126,6 +132,7 @@ fun Settings(paddingValues: PaddingValues) {
                 NavigatePreference(
                     title = stringResource(R.string.advanced_settings),
                     icon = painterResource(R.drawable.notification_settings),
+                    enabled = notificationPermission,
                     onClick = { navigator.goTo(NotificationSettingsKey) }
                 )
             }

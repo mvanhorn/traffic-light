@@ -128,6 +128,7 @@ import com.leekleak.trafficlight.model.PermissionManager
 import com.leekleak.trafficlight.model.search
 import com.leekleak.trafficlight.ui.navigation.Navigator
 import com.leekleak.trafficlight.ui.settings.IconPreference
+import com.leekleak.trafficlight.ui.settings.PermissionCard
 import com.leekleak.trafficlight.ui.settings.SwitchPreference
 import com.leekleak.trafficlight.ui.theme.backgrounds
 import com.leekleak.trafficlight.ui.theme.card
@@ -303,12 +304,25 @@ fun PlanConfig(currentPlan: DataPlan) {
             categoryTitleSmall { stringResource(R.string.notifications) }
             item {
                 val notificationPermission by permissionManager.notificationPermissionFlow.collectAsState(true)
-                val notificationPermissionCallback = rememberLauncherForActivityResult(
-                    ActivityResultContracts.RequestPermission()
+                val notificationPermissionCallback = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
+
+                AnimatedVisibility(
+                    visible = !notificationPermission,
+                    enter = fadeIn(tween()) + slideInVertically() + expandVertically(),
+                    exit = fadeOut(tween()) + slideOutVertically() + shrinkVertically()
                 ) {
-                    scope.launch {
-                        newPlan = newPlan.copy(notification = it)
-                    }
+                    PermissionCard(
+                        title = stringResource(R.string.notification_permission),
+                        description = stringResource(R.string.allow_app_to_send_notifications),
+                        icon = painterResource(R.drawable.notification),
+                        onClick = {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                notificationPermissionCallback.launch(
+                                    Manifest.permission.POST_NOTIFICATIONS
+                                )
+                            }
+                        }
+                    )
                 }
 
                 SwitchPreference (
@@ -316,13 +330,10 @@ fun PlanConfig(currentPlan: DataPlan) {
                     summary = stringResource(R.string.plan_notification_description),
                     icon = painterResource(R.drawable.notification),
                     value = newPlan.notification,
+                    enabled = notificationPermission,
                     onValueChanged = {
-                        if (!notificationPermission && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            notificationPermissionCallback.launch(
-                                Manifest.permission.POST_NOTIFICATIONS
-                            )
-                        } else {
-                            scope.launch { newPlan = newPlan.copy(notification = it) }
+                        scope.launch {
+                            newPlan = newPlan.copy(notification = it)
                         }
                     },
                 )
@@ -340,6 +351,7 @@ fun PlanConfig(currentPlan: DataPlan) {
                             title = stringResource(R.string.live_notification),
                             icon = painterResource(R.drawable.app_badging),
                             value = newPlan.liveNotification,
+                            enabled = notificationPermission,
                             onValueChanged = {
                                 scope.launch {
                                     newPlan = newPlan.copy(liveNotification = it)
@@ -349,6 +361,7 @@ fun PlanConfig(currentPlan: DataPlan) {
                         IconPreference(
                             title = stringResource(R.string.help),
                             painter = painterResource(R.drawable.help),
+                            enabled = notificationPermission,
                             onClick = { openLink(activity, "https://github.com/leekleak/traffic-light/wiki/Troubleshooting#notifications") },
                         )
                     }
@@ -358,6 +371,7 @@ fun PlanConfig(currentPlan: DataPlan) {
                     summary = stringResource(R.string.budget_overshoot_warning_description),
                     icon = painterResource(R.drawable.warning),
                     value = newPlan.budgetWarning,
+                    enabled = notificationPermission,
                     onValueChanged = {
                         scope.launch {
                             newPlan = newPlan.copy(budgetWarning = it)
@@ -369,6 +383,7 @@ fun PlanConfig(currentPlan: DataPlan) {
                     summary = stringResource(R.string.safety_status_warning_description),
                     icon = painterResource(R.drawable.shield),
                     value = newPlan.safetyWarning,
+                    enabled = notificationPermission,
                     onValueChanged = {
                         scope.launch {
                             newPlan = newPlan.copy(safetyWarning = it)

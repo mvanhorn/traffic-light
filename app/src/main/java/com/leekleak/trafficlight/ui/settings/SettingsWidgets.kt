@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -187,6 +189,7 @@ fun SwitchPreference(
 fun IconPreference(
     title: String,
     painter: Painter,
+    enabled: Boolean = true,
     onClick: () -> Unit
 ) {
     Box(
@@ -195,7 +198,8 @@ fun IconPreference(
             .fillMaxHeight()
             .padding(vertical = 4.dp)
             .card()
-            .clickable {onClick.invoke()}
+            .clickable(enabled = enabled) {onClick.invoke()}
+            .alpha(if (enabled) 1f else 0.38f),
     ) {
         Icon(
             modifier = Modifier.align(Alignment.Center),
@@ -421,22 +425,20 @@ fun ThemeAutoPreference(theme: Theme, enabled: Boolean, onClick: () -> Unit) {
 
 @Composable
 fun PermissionCard(
-    modifier: Modifier = Modifier,
     title: String,
     description: String,
     icon: Painter,
-    onHelp: (() -> Unit)? = null,
-    actionButton: @Composable (() -> Unit)? = null,
-    enabled: Boolean = true,
+    onClick: () -> Unit,
 ) {
-    Row (modifier = modifier
-        .card()
-        .padding(16.dp),
+    Row (
+        modifier = Modifier.height(IntrinsicSize.Max).padding(vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f)
+                .card()
+                .padding(16.dp),
             horizontalAlignment = Alignment.End
         ) {
             Row(
@@ -448,22 +450,21 @@ fun PermissionCard(
             }
             Text(modifier = Modifier.fillMaxWidth(), text = description)
         }
-        Column (verticalArrangement = Arrangement.spacedBy(8.dp)){
-            if (onHelp != null) {
-                FilledIconButton(
-                    modifier = Modifier.size(56.dp),
-                    colors = IconButtonDefaults.filledTonalIconButtonColors(),
-                    enabled = enabled,
-                    shape = MaterialTheme.shapes.large,
-                    onClick = onHelp,
-                ) {
-                    Icon(
-                        painterResource(R.drawable.help),
-                        contentDescription = stringResource(R.string.help),
-                    )
-                }
+        Column (
+            modifier = Modifier.fillMaxHeight().width(56.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ){
+            FilledIconButton (
+                modifier = Modifier.fillMaxSize(),
+                shape = MaterialTheme.shapes.large,
+                onClick = onClick,
+            ) {
+                Icon(
+                    painterResource(R.drawable.grant),
+                    contentDescription = stringResource(R.string.grant),
+                )
             }
-            actionButton?.invoke()
+
         }
     }
 }

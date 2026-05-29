@@ -11,7 +11,7 @@
     <string name="speed">Speed: %1$s</string>
     <string name="settings">Settings</string>
     <string name="battery_optimization">Battery optimization</string>
-    <string name="battery_optimization_description">Must be disabled to stop the phone killing the background service after a while.</string>
+    <string name="battery_optimization_description">Ensure system doesn\'t stop service</string>
     <string name="usage_statistics">Usage Permission</string>
     <string name="usage_statistics_description">Required for long-term data usage tracking.</string>
     <string name="notifications">Notification</string>
@@ -128,6 +128,8 @@
     <string name="persistent_notification_disconnected">Persistent Notification (Disconnected)</string>
     <string name="plan_notification">Plan Notification</string>
     <string name="plan_warning_notification">Plan Warning Notification</string>
+    <string name="notification_permission">Notification Permission</string>
+    <string name="allow_app_to_send_notifications">Allow app to send notifications</string>
     <plurals name="resets_in_days">
         <item quantity="one">Resets tomorrow</item>
         <item quantity="other">Resets in %d days</item>
