@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 4,
-    "identityHash": "cfebdb6beb21600990ec0239ae07e544",
+    "identityHash": "6ee829bd70dc13a5894bb8a441c9dca6",
     "entities": [
       {
         "tableName": "DataPlan",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`hashedSubscriberID` TEXT NOT NULL, `encryptedSubscriberID` TEXT NOT NULL, `simIndex` INTEGER NOT NULL, `carrierName` TEXT NOT NULL, `dataMax` INTEGER NOT NULL, `startDate` INTEGER NOT NULL, `interval` TEXT NOT NULL, `intervalMultiplier` INTEGER NOT NULL, `excludedApps` TEXT NOT NULL, `notification` INTEGER NOT NULL, `liveNotification` INTEGER NOT NULL, `budgetWarning` INTEGER NOT NULL, `safetyWarning` INTEGER NOT NULL, `lastSafetyState` INTEGER NOT NULL, `budgetOvershotNotified` INTEGER NOT NULL, `uiBackground` INTEGER NOT NULL, PRIMARY KEY(`hashedSubscriberID`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`hashedSubscriberID` TEXT NOT NULL, `encryptedSubscriberID` TEXT NOT NULL, `simIndex` INTEGER NOT NULL, `carrierName` TEXT NOT NULL, `dataMax` INTEGER NOT NULL, `startDate` INTEGER NOT NULL, `interval` TEXT NOT NULL, `intervalMultiplier` INTEGER NOT NULL, `excludedApps` TEXT NOT NULL, `notification` INTEGER NOT NULL, `liveNotification` INTEGER NOT NULL, `budgetWarning` INTEGER NOT NULL, `safetyWarning` INTEGER NOT NULL, `lastSafetyState` INTEGER NOT NULL, `budgetOvershotNotified` INTEGER NOT NULL, `extras` TEXT NOT NULL, `lastUpdateStamp` INTEGER NOT NULL, `uiBackground` INTEGER NOT NULL, `uiColor` INTEGER NOT NULL, `note` TEXT NOT NULL, PRIMARY KEY(`hashedSubscriberID`))",
         "fields": [
           {
             "fieldPath": "hashedSubscriberID",
@@ -99,9 +99,33 @@
             "notNull": true
           },
           {
+            "fieldPath": "extras",
+            "columnName": "extras",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastUpdateStamp",
+            "columnName": "lastUpdateStamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
             "fieldPath": "uiBackground",
             "columnName": "uiBackground",
             "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "uiColor",
+            "columnName": "uiColor",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "note",
+            "columnName": "note",
+            "affinity": "TEXT",
             "notNull": true
           }
         ],
@@ -115,7 +139,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'cfebdb6beb21600990ec0239ae07e544')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6ee829bd70dc13a5894bb8a441c9dca6')"
     ]
   }
 }

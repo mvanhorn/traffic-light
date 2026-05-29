@@ -9,5 +9,9 @@ val MIGRATION_3_4 = object : Migration(3, 4) {
         db.execSQL("ALTER TABLE DataPlan ADD COLUMN safetyWarning INTEGER NOT NULL DEFAULT 0")
         db.execSQL("ALTER TABLE DataPlan ADD COLUMN lastSafetyState INTEGER NOT NULL DEFAULT -1")
         db.execSQL("ALTER TABLE DataPlan ADD COLUMN budgetOvershotNotified INTEGER NOT NULL DEFAULT 0")
+        db.execSQL("ALTER TABLE DataPlan ADD COLUMN extras TEXT NOT NULL DEFAULT '[]'")
+        db.execSQL("ALTER TABLE DataPlan ADD COLUMN lastUpdateStamp INTEGER NOT NULL DEFAULT 0")
+        db.execSQL("ALTER TABLE DataPlan ADD COLUMN uiColor INTEGER NOT NULL DEFAULT 0")
+        db.execSQL("ALTER TABLE DataPlan ADD COLUMN note TEXT NOT NULL DEFAULT ''")
     }
 }

@@ -18,9 +18,11 @@ import com.leekleak.trafficlight.util.fromTimestamp
 import com.leekleak.trafficlight.util.toTimestamp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.UUID
 
 enum class TimeInterval {
     DAY,
@@ -56,10 +58,14 @@ data class DataPlan(
     @ColumnInfo val lastSafetyState: Int = 0,
     @ColumnInfo val budgetOvershotNotified: Boolean = false,
 
+    @ColumnInfo val extras: List<DataPlanExtra> = listOf(),
+    @ColumnInfo val lastUpdateStamp: Long = System.currentTimeMillis(),
     /**
      * Customization
      */
     @ColumnInfo val uiBackground: Int = if (simIndex != -1) simIndex + 1 else 0,
+    @ColumnInfo val uiColor: Int = 0,
+    @ColumnInfo val note: String = "",
 ) {
     init {
         require(intervalMultiplier > 0) {
@@ -109,10 +115,34 @@ data class DataPlan(
         }
     }
 
+    fun getEffectiveDataMax(at: LocalDateTime = LocalDateTime.now()): Long {
+        val cycleStart = getStartDate().toTimestamp()
+        val now = at.toTimestamp()
+        val activeExtras = extras.filter { extra ->
+            if (extra.expiryDate != null) {
+                now < extra.expiryDate
+            } else {
+                extra.addedDate >= cycleStart
+            }
+        }
+        return dataMax + activeExtras.sumOf { it.dataAmount }
+    }
+
+    val effectiveDataMax: Long
+        get() = getEffectiveDataMax()
+
     companion object {
         const val NULL_SUBSCRIBER = "__shizuku_disabled_sim_fallback__"
     }
 }
+
+@Serializable
+data class DataPlanExtra(
+    val id: String = UUID.randomUUID().toString(),
+    val dataAmount: Long,
+    val expiryDate: Long? = null,
+    val addedDate: Long = System.currentTimeMillis()
+)
 
 @Dao
 interface DataPlanDao {
@@ -154,6 +184,20 @@ class Converters {
     fun toListInt(data: String): List<Int> {
         if (data == "") return listOf()
         return data.split(",").mapNotNull { it.trim().toIntOrNull() }
+    }
+
+    @TypeConverter
+    fun fromListExtras(list: List<DataPlanExtra>): String {
+        return Json.encodeToString(list)
+    }
+
+    @TypeConverter
+    fun toListExtras(data: String): List<DataPlanExtra> {
+        return try {
+            Json.decodeFromString(data)
+        } catch (_: Exception) {
+            listOf()
+        }
     }
 }
 

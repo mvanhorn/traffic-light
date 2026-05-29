@@ -51,6 +51,7 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.maxLength
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.DatePicker
@@ -68,6 +69,7 @@ import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TimePickerDialog
 import androidx.compose.material3.TooltipAnchorPosition
@@ -121,6 +123,7 @@ import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.charts.GraphTheme.wifiShape
 import com.leekleak.trafficlight.database.DataPlan
 import com.leekleak.trafficlight.database.DataPlanDao
+import com.leekleak.trafficlight.database.DataPlanExtra
 import com.leekleak.trafficlight.database.TimeInterval
 import com.leekleak.trafficlight.model.AppManager
 import com.leekleak.trafficlight.model.DataUID
@@ -405,6 +408,7 @@ fun PlanConfig(currentPlan: DataPlan) {
                     }
                 }
             }
+            extrasConfig(newPlan) { newPlan = it }
         }
         PageTitle (true, hazeState, stringResource(R.string.configure_plan))
     }
@@ -893,6 +897,187 @@ fun PlanSizeConfig(size: Double, onSizeUpdate: (Float) -> Unit) {
             }
         }
     }
+}
+
+private fun LazyListScope.extrasConfig(newPlan: DataPlan, onPlanChange: (plan: DataPlan) -> Unit) {
+    categoryTitleSmall { stringResource(R.string.plans) }
+    item {
+        val haptic = LocalHapticFeedback.current
+        var showAddExtraDialog by remember { mutableStateOf(false) }
+
+        if (showAddExtraDialog) {
+            AddExtraDialog(
+                onDismiss = { showAddExtraDialog = false },
+                onConfirm = { extra ->
+                    onPlanChange(newPlan.copy(extras = newPlan.extras + extra))
+                }
+            )
+        }
+
+        Column(
+            modifier = Modifier.card().padding(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            newPlan.extras.forEach { extra ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(MaterialTheme.shapes.medium)
+                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        val dataSizeStr = DataSize(extra.dataAmount).toString()
+                        val expiryStr = extra.expiryDate?.let { " • Exp: ${fromTimestamp(it).toLocalDate()}" } ?: ""
+                        Text(
+                            text = "+$dataSizeStr$expiryStr",
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                    }
+                    FilledIconButton(
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            onPlanChange(newPlan.copy(extras = newPlan.extras.filter { it.id != extra.id }))
+                        },
+                        modifier = Modifier.size(32.dp),
+                        shape = MaterialTheme.shapes.small,
+                        colors = androidx.compose.material3.IconButtonDefaults.filledIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer,
+                            contentColor = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                    ) {
+                        Icon(painterResource(R.drawable.close), null, modifier = Modifier.size(16.dp))
+                    }
+                }
+            }
+
+            Button(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
+                    showAddExtraDialog = true
+                }
+            ) {
+                Icon(painterResource(R.drawable.add), null)
+                Text("Add Extra")
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AddExtraDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (DataPlanExtra) -> Unit
+) {
+    val amountState = rememberTextFieldState("1")
+    var unit by remember { mutableStateOf(DataSizeUnit.GB) }
+    var expiryDate by remember { mutableStateOf<Long?>(null) }
+    var showDatePicker by remember { mutableStateOf(false) }
+
+    if (showDatePicker) {
+        val datePickerState = rememberDatePickerState()
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    expiryDate = datePickerState.selectedDateMillis
+                    showDatePicker = false
+                }) { Text(stringResource(R.string.save)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) { Text(stringResource(R.string.close)) }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            Button(onClick = {
+                val amountValue = amountState.text.toString().toDoubleOrNull() ?: 1.0
+                val amountBytes = (amountValue * unit.toBits()).toLong()
+                onConfirm(
+                    DataPlanExtra(
+                        dataAmount = amountBytes,
+                        expiryDate = expiryDate
+                    )
+                )
+                onDismiss()
+            }) {
+                Text(stringResource(R.string.save))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.close))
+            }
+        },
+        title = { Text("Add Extra") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Column {
+                    Text("Amount", style = MaterialTheme.typography.labelMedium)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        BasicTextField(
+                            state = amountState,
+                            modifier = Modifier
+                                .weight(1f)
+                                .card()
+                                .padding(8.dp),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+                            cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface)
+                        )
+                        Button(
+                            onClick = {
+                                unit = if (unit == DataSizeUnit.GB) DataSizeUnit.MB else DataSizeUnit.GB
+                            },
+                            shape = MaterialTheme.shapes.medium,
+                            contentPadding = PaddingValues(horizontal = 12.dp)
+                        ) {
+                            Text(unit.name)
+                        }
+                    }
+                }
+
+                Column {
+                    Text("Expiry Date (Optional)", style = MaterialTheme.typography.labelMedium)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .card()
+                            .clickable { showDatePicker = true }
+                            .padding(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(painterResource(R.drawable.calendar_month), null)
+                        Text(
+                            text = expiryDate?.let { fromTimestamp(it).toLocalDate().toString() } ?: "No expiry",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        if (expiryDate != null) {
+                            Box(Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
+                                Icon(
+                                    painterResource(R.drawable.close),
+                                    null,
+                                    Modifier.clickable { expiryDate = null }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    )
 }
 
 object PastOrPresentSelectableDates: SelectableDates {
