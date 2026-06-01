@@ -1054,6 +1054,7 @@ private fun AddExtraDialog(
                         modifier = Modifier
                             .weight(1f)
                             .card()
+                            .background(MaterialTheme.colorScheme.surface)
                             .padding(8.dp),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
