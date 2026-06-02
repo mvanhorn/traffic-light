@@ -75,7 +75,8 @@
     <string name="mobile_data">Mobile data</string>
     <string name="notification_channels">Notification Channel Settings</string>
     <string name="go_back">Go back</string>
-    <string name="disconnected_from_network">Disconnected from network</string>
+    <string name="disconnected_from_network_or_low_speed">Disconnected from network or low-speed</string>
+    <string name="disconnected">Disconnected</string>
     <string name="overview">Overview</string>
     <string name="multi_sim_tracking">Multi-SIM tracking</string>
     <string name="shizuku_required">Shizuku required</string>
@@ -126,7 +127,7 @@
     <string name="ad">Ad</string>
     <string name="no_browser_found">No browser found</string>
     <string name="persistent_notification">Persistent Notification</string>
-    <string name="persistent_notification_disconnected">Persistent Notification (Disconnected)</string>
+    <string name="persistent_notification_silent">Persistent Notification (Silent)</string>
     <string name="plan_notification">Plan Notification</string>
     <string name="plan_warning_notification">Plan Warning Notification</string>
     <string name="notification_permission">Notification Permission</string>
@@ -134,6 +135,9 @@
     <string name="hint">Hint</string>
     <string name="press_the_card_to_configure_plan_data">Press the card to configure plan data.</string>
     <string name="extras">Extras</string>
+    <string name="speed_threshold">Silence notification</string>
+    <string name="speed_threshold_description">Silence notification when below a threshold.</string>
+    <string name="threshold">Threshold</string>
     <plurals name="resets_in_days">
         <item quantity="one">Resets tomorrow</item>
         <item quantity="other">Resets in %d days</item>

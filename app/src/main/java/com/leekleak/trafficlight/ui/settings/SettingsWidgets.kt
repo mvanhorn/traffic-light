@@ -1,8 +1,15 @@
 package com.leekleak.trafficlight.ui.settings
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +29,8 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.ProvideTextStyle
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.toPath
@@ -47,14 +56,19 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.charts.GraphTheme
 import com.leekleak.trafficlight.ui.theme.Theme
 import com.leekleak.trafficlight.ui.theme.card
+import com.leekleak.trafficlight.ui.theme.googleSans
 import com.leekleak.trafficlight.util.CategoryTitleSmallText
 import com.leekleak.trafficlight.util.px
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 @Composable
 fun Preference(
@@ -187,6 +201,116 @@ fun SwitchPreference(
             )
         },
     )
+}
+
+@Composable
+fun SliderPreference(
+    modifier: Modifier = Modifier,
+    modifierLabelText: Modifier = Modifier,
+    title: String,
+    icon: Painter? = null,
+    value: Long,
+    values: List<Pair<Long, String?>>,
+    enabled: Boolean = true,
+    onValueChanged: (Long) -> Unit
+) {
+   SliderComponent(
+       modifier = modifier.fillMaxWidth()
+           .padding(vertical = 4.dp)
+           .card()
+           .padding(start = 8.dp, end = 16.dp, bottom = 4.dp)
+           .alpha(if (enabled) 1f else 0.38f),
+       modifierLabelText = modifierLabelText,
+       title = title,
+       icon = icon,
+       value = value,
+       values = values,
+       enabled = enabled,
+       onValueChanged = onValueChanged
+   )
+}
+
+@Composable
+fun SliderComponent(
+    modifier: Modifier,
+    modifierLabelText: Modifier = Modifier,
+    title: String,
+    icon: Painter? = null,
+    value: Long,
+    values: List<Pair<Long, String?>>,
+    enabled: Boolean = true,
+    onValueChanged: (Long) -> Unit
+) {
+    val haptic = LocalHapticFeedback.current
+    val fontFamilyBold = remember { googleSans(weight = 800f) }
+    val currentIndex = remember(value, values) {
+        values.indexOfFirst { it.first == value }.coerceAtLeast(0)
+    }
+
+    Column(modifier = modifier) {
+        Row(
+            modifier = Modifier.padding(top = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            icon?.let { Icon(
+                modifier = Modifier.width(48.dp),
+                painter = it,
+                contentDescription = null,
+            ) }
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+            )
+        }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                val interactionSource = remember { MutableInteractionSource() }
+                Slider(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 8.dp),
+                    value = currentIndex.toFloat(),
+                    onValueChange = {
+                        val newIndex = it.roundToInt()
+                        if (newIndex != currentIndex && newIndex in values.indices) {
+                            haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                            onValueChanged(values[newIndex].first)
+                        }
+                    },
+                    thumb = {
+                        SliderDefaults.Thumb(
+                            interactionSource = interactionSource,
+                            thumbSize = DpSize(4.dp, 28.dp)
+                        )
+                    },
+                    interactionSource = interactionSource,
+                    enabled = enabled,
+                    valueRange = 0f..((values.size - 1).coerceAtLeast(0).toFloat()),
+                    steps = (values.size - 2).coerceAtLeast(0)
+                )
+                val valueLabel = remember(currentIndex, values) {
+                    val pair = values.getOrNull(currentIndex)
+                    pair?.second ?: pair?.first?.toString() ?: ""
+                }
+                AnimatedContent(
+                    targetState = valueLabel,
+                    transitionSpec = {
+                        (slideInVertically{ -it / 2 } + fadeIn()).togetherWith(
+                            (slideOutVertically { it / 2 }) + fadeOut()
+                        )
+                    }
+                ) {
+                    Text(
+                        modifier = modifierLabelText.padding(start = 16.dp),
+                        text = it,
+                        fontFamily = fontFamilyBold,
+                        textAlign = TextAlign.Center,
+                        overflow = TextOverflow.Visible,
+                        softWrap = false,
+                    )
+                }
+            }
+        }
 }
 
 @Composable

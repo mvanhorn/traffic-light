@@ -52,6 +52,8 @@ class SpeedNotification(
     private var inBits = false
     private var separateUpDown = false
     private var liveNotification = false
+    private var speedThreshold = false
+    private var speedThresholdBytes = -1024L
     private var todayUsage = DayUsage()
 
     init {
@@ -66,6 +68,12 @@ class SpeedNotification(
         }
         scope.launch {
             appPreferenceRepo.liveNotification.collect { liveNotification = it; updateNotification(trafficSnapshot, true) }
+        }
+        scope.launch {
+            appPreferenceRepo.speedThreshold.collect { speedThreshold = it; updateNotification(trafficSnapshot, true) }
+        }
+        scope.launch {
+            appPreferenceRepo.speedThresholdBytes.collect { speedThresholdBytes = it; updateNotification(trafficSnapshot, true) }
         }
         updateBaseNotification()
     }
@@ -164,8 +172,15 @@ class SpeedNotification(
     }
 
     private fun updateBaseNotification() {
-        val networkAvailable = isNetworkAvailable()
-        val channel = if (networkAvailable) NOTIFICATION_CHANNEL_ID else NOTIFICATION_CHANNEL_ID_SILENT
+        val channel = when {
+            (speedThreshold &&
+                (
+                    (speedThresholdBytes == -1024L) && !isNetworkAvailable() ||
+                    (trafficSnapshot.totalSpeed < speedThresholdBytes)
+                )
+            ) -> NOTIFICATION_CHANNEL_ID_SILENT
+            else -> NOTIFICATION_CHANNEL_ID
+        }
         notificationBuilder = NotificationCompat.Builder(context, channel)
             .setSmallIcon(R.drawable.notification)
             .setContentTitle(context.getString(R.string.app_name_short))
