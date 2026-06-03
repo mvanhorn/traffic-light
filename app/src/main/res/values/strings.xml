@@ -117,6 +117,8 @@
     <string name="unsafe">Unsafe</string>
     <string name="budget">Budget</string>
     <string name="daily">Daily</string>
+    <string name="note">Note</string>
+    <string name="write_your_note_here">Write your note here…</string>
     <string name="notes">Notes</string>
     <string name="color">Color</string>
     <string name="plans">Plans</string>

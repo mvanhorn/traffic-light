@@ -396,6 +396,32 @@ fun PlanConfig(currentPlan: DataPlan) {
                     }
                 )
             }
+            categoryTitleSmall { stringResource(R.string.notes) }
+            item {
+                val noteState = rememberTextFieldState(newPlan.note)
+                LaunchedEffect(noteState.text) {
+                    newPlan = newPlan.copy(note = noteState.text.toString())
+                }
+                BasicTextField(
+                    state = noteState,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .card()
+                        .padding(12.dp),
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+                    cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface),
+                    decorator = { innerTextField ->
+                        if (noteState.text.isEmpty()) {
+                            Text(
+                                text = stringResource(R.string.write_your_note_here),
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                            )
+                        }
+                        innerTextField()
+                    }
+                )
+            }
             categoryTitleSmall { stringResource(R.string.background) }
             item {
                 LazyRow(

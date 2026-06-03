@@ -229,6 +229,18 @@ private fun DataPlanInsights(contentPadding: PaddingValues) {
             }
         }
         dataPlan?.let { plan ->
+            if (plan.note.isNotEmpty()) {
+                item(key = "note") {
+                    Box(Modifier.animateItem()) {
+                        InfoCard(
+                            title = stringResource(R.string.note),
+                            description = plan.note,
+                            icon = painterResource(R.drawable.sticky_note_2),
+                            backgroundColor = colorScheme.surface
+                        )
+                    }
+                }
+            }
             if (plan.mainDataAmount > 0) usageInsights()
             extras(plan)
             thisWeek()
