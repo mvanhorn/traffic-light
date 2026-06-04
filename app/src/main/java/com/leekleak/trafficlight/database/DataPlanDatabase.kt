@@ -17,6 +17,8 @@ import androidx.room.TypeConverters
 import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.database.DataPlan.Companion.NULL_SUBSCRIBER
 import com.leekleak.trafficlight.model.NetworkUsageManager
+import com.leekleak.trafficlight.util.DataSize
+import com.leekleak.trafficlight.util.DataSizeUnit
 import com.leekleak.trafficlight.util.fromTimestamp
 import com.leekleak.trafficlight.util.toTimestamp
 import kotlinx.coroutines.flow.Flow
@@ -46,7 +48,7 @@ data class DataPlan(
 
     @ColumnInfo val simIndex: Int = -1,
     @ColumnInfo val carrierName: String = "",
-    
+
     @ColumnInfo val startDate: Long = LocalDate.now().withDayOfMonth(1).atStartOfDay().toTimestamp(), // LocalDate as timestamp
     @ColumnInfo val interval: TimeInterval = TimeInterval.MONTH,
     @ColumnInfo val intervalMultiplier: Int = 1,
@@ -62,7 +64,8 @@ data class DataPlan(
     @ColumnInfo val lastSafetyState: Int = -1,
     @ColumnInfo val budgetOvershotNotified: Boolean = false,
 
-    @ColumnInfo var mainDataAmount: Long = 0,
+    @ColumnInfo var mainDataSize: DataSize = DataSize(0),
+    @ColumnInfo var mainDataSizeUnit: DataSizeUnit = DataSizeUnit.GB,
     @ColumnInfo var mainDataUsed: Long = 0,
     @ColumnInfo var mainStartStamp: Long = startDate,
     @ColumnInfo var mainExpiryStamp: Long = Long.MAX_VALUE,
@@ -241,7 +244,7 @@ data class DataPlan(
     }
 
     fun getTotalMax(): Long {
-        return mainDataAmount + extras.filter { !it.expired }.sumOf { it.dataAmount }
+        return mainDataSize.byteValue + extras.filter { !it.expired }.sumOf { it.dataAmount }
     }
 
     suspend fun getUsage(networkUsageManager: NetworkUsageManager): Long {
@@ -309,6 +312,25 @@ abstract class AppDatabase : RoomDatabase() {
 }
 
 class Converters {
+    @TypeConverter
+    fun fromDataSize(dataSize: DataSize): Long {
+        return dataSize.byteValue
+    }
+
+    @TypeConverter
+    fun toDataSize(byteValue: Long): DataSize {
+        return DataSize(byteValue)
+    }
+
+    @TypeConverter
+    fun toTimeInterval(name: String): TimeInterval {
+        return try {
+            TimeInterval.valueOf(name)
+        } catch (_: Exception) {
+            TimeInterval.MONTH
+        }
+    }
+
     @TypeConverter
     fun fromListInt(list: List<Int>): String {
         return list.joinToString(",")

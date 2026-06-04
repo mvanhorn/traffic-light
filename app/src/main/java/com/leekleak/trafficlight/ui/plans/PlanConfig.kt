@@ -223,12 +223,22 @@ fun PlanConfig(currentPlan: DataPlan) {
         ) {
             item {
                 val size by remember { derivedStateOf {
-                    DataSize(newPlan.mainDataAmount).getAsUnit(DataSizeUnit.GB)
+                    newPlan.mainDataSize.getAsUnit(newPlan.mainDataSizeUnit)
                 } }
-                PlanSizeConfig (size = size) {
-                    val data = DataSize((it * DataSizeUnit.GB.toBits()).toLong())
-                    newPlan = newPlan.copy(mainDataAmount = data.byteValue)
-                }
+                PlanSizeConfig (
+                    size = size,
+                    unit = newPlan.mainDataSizeUnit,
+                    onSizeUpdate = {
+                        val data = DataSize((it * newPlan.mainDataSizeUnit.toBits()).toLong())
+                        newPlan = newPlan.copy(mainDataSize = data)
+                    },
+                    onUnitUpdate = {
+                        newPlan = newPlan.copy(
+                            mainDataSize = DataSize((newPlan.mainDataSize.value * it.toBits()).toLong()),
+                            mainDataSizeUnit = it
+                        )
+                    }
+                )
             }
             categoryTitleSmall { stringResource(R.string.type) }
             typeConfig(newPlan) { newPlan = it }
@@ -812,7 +822,12 @@ fun BackgroundSelector(i: Int, newPlan: DataPlan, onClick: () -> Unit) {
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun PlanSizeConfig(size: Double, onSizeUpdate: (Float) -> Unit) {
+fun PlanSizeConfig(
+    size: Double,
+    unit: DataSizeUnit,
+    onSizeUpdate: (Float) -> Unit,
+    onUnitUpdate: (DataSizeUnit) -> Unit
+) {
     Box(
         modifier = Modifier
             .padding(top = TOP_BAR_HEIGHT)
@@ -824,6 +839,7 @@ fun PlanSizeConfig(size: Double, onSizeUpdate: (Float) -> Unit) {
         val shapeSizeBase = 128.dp.px
         val shapeColor = MaterialTheme.colorScheme.primaryContainer
         val scale = remember { Animatable(0f) }
+        val haptic = LocalHapticFeedback.current
 
         val shapeTransformed = remember(scale.value) {
             val sizePx = shapeSizeBase * (1 + scale.value)
@@ -870,7 +886,7 @@ fun PlanSizeConfig(size: Double, onSizeUpdate: (Float) -> Unit) {
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterHorizontally)
+                horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally)
             ) {
                 var intrinsics by remember { mutableIntStateOf(0) }
                 val fontFamilyDoHyeon = remember { doHyeonFont() }
@@ -904,14 +920,24 @@ fun PlanSizeConfig(size: Double, onSizeUpdate: (Float) -> Unit) {
                     cursorBrush = SolidColor(MaterialTheme.colorScheme.surface),
                     lineLimits = TextFieldLineLimits.SingleLine,
                 )
-                Text(
-                    modifier = Modifier.alignByBaseline(),
-                    fontFamily = fontFamilyDoHyeon,
-                    fontSize = 30.sp * (1 + scale.value/2),
-                    maxLines = 1,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    text = "GB"
-                )
+                Box (
+                    Modifier
+                        .clip(MaterialTheme.shapes.medium)
+                        .clickable {
+                            onUnitUpdate(if (unit == DataSizeUnit.GB) DataSizeUnit.MB else DataSizeUnit.GB)
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        }
+                        .border(2f.dp, MaterialTheme.colorScheme.primary, MaterialTheme.shapes.medium)
+                        .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 6.dp)
+                ) {
+                    Text(
+                        fontFamily = fontFamilyDoHyeon,
+                        fontSize = 18.sp * (1 + scale.value/2),
+                        maxLines = 1,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        text = unit.name
+                    )
+                }
             }
         }
     }

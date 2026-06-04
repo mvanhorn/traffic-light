@@ -49,7 +49,6 @@ import com.leekleak.trafficlight.ui.theme.carrierFont
 import com.leekleak.trafficlight.ui.theme.doHyeonFont
 import com.leekleak.trafficlight.ui.theme.longGoogleSans
 import com.leekleak.trafficlight.util.DataSize
-import com.leekleak.trafficlight.util.DataSizeUnit
 import com.leekleak.trafficlight.util.simIconRes
 import org.koin.compose.koinInject
 import java.text.DecimalFormat
@@ -77,7 +76,7 @@ fun UnconfiguredDataPlan(dataPlan: DataPlan, onConfigure: () -> Unit) {
     val fontFamilyDoHyeon = remember { doHyeonFont() }
 
     val dataUsage by produceState(0L) { value = dataPlan.getUsage(networkUsageManager) }
-    val usage = DataSize(dataUsage).getAsUnit(DataSizeUnit.GB)
+    val usage = DataSize(dataUsage).getAsUnit(dataPlan.mainDataSizeUnit)
     val formatter = remember { DecimalFormat("0.##") }
     BoxBackground(
         dataPlan = dataPlan,
@@ -95,7 +94,7 @@ fun UnconfiguredDataPlan(dataPlan: DataPlan, onConfigure: () -> Unit) {
                         append(formatter.format(usage))
                     }
                     withStyle(style = SpanStyle(fontSize = 36.sp, fontFamily = fontFamilyDoHyeon)) {
-                        appendLine("GB")
+                        appendLine(dataPlan.mainDataSizeUnit.name)
                     }
                     withStyle(
                         style = SpanStyle(
@@ -163,15 +162,15 @@ private fun BoxScope.ConfiguredDataPlanContent(dataPlan: DataPlan) {
     val networkUsageManager: NetworkUsageManager = koinInject()
     val fontFamilyGoogleSans = remember { longGoogleSans() }
     val fontFamilyDoHyeon = remember { doHyeonFont() }
-    val dataUsage by produceState(0L) { value = dataPlan.getUsage(networkUsageManager) }
-    val usage by remember(dataUsage) {
+    val usageDataSize by produceState(DataSize(0)) { value = DataSize(dataPlan.getUsage(networkUsageManager)) }
+    val usageValue by remember(usageDataSize) {
         derivedStateOf {
-            DataSize(dataUsage).getAsUnit(DataSizeUnit.GB)
+            usageDataSize.getAsUnit(dataPlan.mainDataSizeUnit)
         }
     }
 
     val formatter = remember { DecimalFormat("0.##") }
-    val data = remember(dataPlan) { formatter.format(DataSize(dataPlan.getTotalMax()).getAsUnit(DataSizeUnit.GB)) }
+    val data = remember(dataPlan) { formatter.format(dataPlan.mainDataSize.getAsUnit(dataPlan.mainDataSizeUnit)) }
 
     Box (Modifier.align(Alignment.Center)) {
         Text(
@@ -179,10 +178,10 @@ private fun BoxScope.ConfiguredDataPlanContent(dataPlan: DataPlan) {
             textAlign = TextAlign.Center,
             text = buildAnnotatedString {
                 withStyle(style = SpanStyle(fontSize = 64.sp, fontFamily = fontFamilyDoHyeon)) {
-                    append(formatter.format(usage))
+                    append(formatter.format(usageValue))
                 }
                 withStyle(style = SpanStyle(fontSize = 36.sp, fontFamily = fontFamilyDoHyeon)) {
-                    appendLine("/${data}GB")
+                    appendLine("/${data}${dataPlan.mainDataSizeUnit.name}")
                 }
             }
         )
@@ -200,15 +199,12 @@ private fun BoxScope.ConfiguredDataPlanContent(dataPlan: DataPlan) {
             text = dataPlan.resetString(context),
             fontFamily = fontFamilyGoogleSans
         )
-        val lineUsage = DataSize((usage * DataSizeUnit.GB.toBits()).toLong())
         LinearWavyProgressIndicator(
             modifier = Modifier.fillMaxWidth(),
             progress = {
-                val totalMax = dataPlan.getTotalMax()
+                val totalMax = dataPlan.mainDataSize.byteValue
                 if (totalMax == 0L) 0f
-                else (lineUsage.byteValue
-                    .toDouble() / totalMax.toDouble()).toFloat()
-                    .coerceIn(0f, 1f)
+                else (usageDataSize.byteValue / totalMax.toDouble()).toFloat().coerceIn(0f, 1f)
             },
         )
     }

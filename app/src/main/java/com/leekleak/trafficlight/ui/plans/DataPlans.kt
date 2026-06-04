@@ -139,7 +139,7 @@ private fun DataPlanPager(
     ) { page ->
         if (page < activePlans.size) {
             val plan = activePlans[page]
-            if (plan.mainDataAmount != 0L) {
+            if (plan.mainDataSize.byteValue != 0L) {
                 ConfiguredDataPlan(plan) {
                     navigator.goTo(PlanConfigKey(plan))
                 }
@@ -218,7 +218,7 @@ private fun DataPlanInsights(contentPadding: PaddingValues) {
         state = listState
     ) {
         item{}
-        if (dataPlan != null && (dataPlan?.mainDataAmount ?: 0) == 0L ) {
+        if (dataPlan != null && (dataPlan?.mainDataSize?.byteValue ?: 0) == 0L ) {
             item {
                 InfoCard(
                     title = stringResource(R.string.hint),
@@ -241,11 +241,11 @@ private fun DataPlanInsights(contentPadding: PaddingValues) {
                     }
                 }
             }
-            if (plan.mainDataAmount > 0) usageInsights()
+            if (plan.mainDataSize.byteValue > 0) usageInsights()
             extras(plan)
             thisWeek()
             if (adsEnabled) item { Ad(AdType.NativeBanner, colorScheme.surface) }
-            if (plan.mainDataAmount > 0) budgetInsights()
+            if (plan.mainDataSize.byteValue > 0) budgetInsights()
             if (topAppsList.isNotEmpty()) topApps(topAppsList)
         }
     }

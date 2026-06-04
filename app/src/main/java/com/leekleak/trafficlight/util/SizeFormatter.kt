@@ -1,5 +1,6 @@
 package com.leekleak.trafficlight.util
 
+import kotlinx.serialization.Serializable
 import java.math.BigDecimal
 import kotlin.math.ceil
 import kotlin.math.pow
@@ -14,6 +15,7 @@ enum class DataSizeUnit {
     }
 }
 
+@Serializable
 data class DataSize (
     val byteValue: Long,
 ) {
