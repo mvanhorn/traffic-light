@@ -266,9 +266,18 @@ private fun LazyListScope.extras(plan: DataPlan) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    ExtraGraph(Modifier.weight(1f), chunk[0])
+                    ExtraGraph(
+                        modifier = Modifier
+                            .weight(1f)
+                            .background(colorScheme.surface, MaterialTheme.shapes.medium),
+                        extra = chunk[0]
+                    )
                     if (chunk.size > 1) {
-                        ExtraGraph(Modifier.weight(1f), chunk[1])
+                        ExtraGraph(
+                            modifier = Modifier.weight(1f)
+                                .background(colorScheme.surface, MaterialTheme.shapes.medium),
+                            extra = chunk[1]
+                        )
                     } else {
                         Box(Modifier.weight(1f))
                     }

@@ -120,6 +120,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.leekleak.trafficlight.R
+import com.leekleak.trafficlight.charts.ExtraGraph
 import com.leekleak.trafficlight.charts.GraphTheme.wifiShape
 import com.leekleak.trafficlight.database.DataPlan
 import com.leekleak.trafficlight.database.DataPlanDao
@@ -979,69 +980,91 @@ fun PlanSizeConfig(
 }
 
 private fun LazyListScope.extrasConfig(newPlan: DataPlan, onPlanChange: (plan: DataPlan) -> Unit) {
-    item {
-        val haptic = LocalHapticFeedback.current
-        var showAddExtraDialog by remember { mutableStateOf(false) }
-
-        if (showAddExtraDialog) {
-            AddExtraDialog(
-                onDismiss = { showAddExtraDialog = false },
-                onConfirm = { extra ->
-                    onPlanChange(newPlan.copy(extras = newPlan.extras + extra))
-                }
-            )
-        }
-
-        Column(
-            modifier = Modifier
-                .card()
-                .padding(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            newPlan.extras.forEach { extra ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(MaterialTheme.shapes.medium)
-                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        val dataSizeStr = extra.dataAmount.toString()
-                        val startStr = fromTimestamp(extra.startStamp).toLocalDate().toString()
-                        val expiryStr = if (extra.expiryStamp != Long.MAX_VALUE) " • Exp: ${fromTimestamp(extra.expiryStamp).toLocalDate()}" else ""
-                        Text(
-                            text = "+$dataSizeStr ($startStr$expiryStr)",
-                            style = MaterialTheme.typography.titleMedium,
-                        )
-                    }
-                    FilledIconButton(
-                        onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            onPlanChange(newPlan.copy(extras = newPlan.extras.filter { it.id != extra.id }))
-                        },
-                        modifier = Modifier.size(32.dp),
-                        shape = MaterialTheme.shapes.small,
-                        colors = androidx.compose.material3.IconButtonDefaults.filledIconButtonColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer,
-                            contentColor = MaterialTheme.colorScheme.onErrorContainer
-                        )
-                    ) {
-                        Icon(painterResource(R.drawable.close), null, modifier = Modifier.size(16.dp))
-                    }
-                }
-            }
-
-            Button(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = {
-                    haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
-                    showAddExtraDialog = true
-                }
+    val extrasWithAdd = newPlan.extras.map { it as Any? } + listOf(null)
+    extrasWithAdd.chunked(2).forEach { chunk ->
+        item {
+            val haptic = LocalHapticFeedback.current
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Icon(painterResource(R.drawable.add), null)
-                Text("Add Extra")
+                chunk.forEach { item ->
+                    if (item is DataPlanExtra) {
+                        Box(modifier = Modifier.weight(1f)) {
+                            ExtraGraph(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(MaterialTheme.colorScheme.surfaceContainer, MaterialTheme.shapes.medium),
+                                extra = item,
+                                showOnlyMax = true
+                            )
+                            FilledIconButton(
+                                onClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    onPlanChange(newPlan.copy(extras = newPlan.extras.filter { it.id != item.id }))
+                                },
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(4.dp)
+                                    .size(32.dp),
+                                shape = MaterialTheme.shapes.small,
+                                colors = androidx.compose.material3.IconButtonDefaults.filledIconButtonColors(
+                                    containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.8f),
+                                    contentColor = MaterialTheme.colorScheme.onErrorContainer
+                                )
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.close),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+                    } else {
+                        var showAddExtraDialog by remember { mutableStateOf(false) }
+                        if (showAddExtraDialog) {
+                            AddExtraDialog(
+                                onDismiss = { showAddExtraDialog = false },
+                                onConfirm = { extra ->
+                                    onPlanChange(newPlan.copy(extras = newPlan.extras + extra))
+                                }
+                            )
+                        }
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(128.dp)
+                                .clip(MaterialTheme.shapes.medium)
+                                .background(MaterialTheme.colorScheme.surfaceContainer)
+                                .clickable {
+                                    haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                    showAddExtraDialog = true
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.add),
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Text(
+                                    text = stringResource(R.string.add_extra),
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+                if (chunk.size == 1) {
+                    Box(Modifier.weight(1f))
+                }
             }
         }
     }

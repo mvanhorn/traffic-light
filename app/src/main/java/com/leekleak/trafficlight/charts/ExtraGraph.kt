@@ -1,7 +1,6 @@
 package com.leekleak.trafficlight.charts
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -32,8 +31,9 @@ import kotlin.math.min
 
 @Composable
 fun ExtraGraph(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     extra: DataPlanExtra,
+    showOnlyMax: Boolean = false,
 ) {
     val primaryColor = GraphTheme.primaryColor
     val onPrimaryColor = GraphTheme.onPrimaryColor
@@ -54,11 +54,17 @@ fun ExtraGraph(
     val data = remember(extra) { formatter.format(extra.dataAmount.getAsUnit(extra.unit)) }
     val stringAnnotated by remember { derivedStateOf {
         buildAnnotatedString {
-            withStyle(style = SpanStyle(fontFamily = font1, fontSize = 46.sp)) {
-                append("$string")
-            }
-            withStyle(style = SpanStyle(fontFamily = font1, fontSize = 36.sp)) {
-                appendLine("/${data}${extra.unit}")
+            if (!showOnlyMax) {
+                withStyle(style = SpanStyle(fontFamily = font1, fontSize = 46.sp)) {
+                    append("$string")
+                }
+                withStyle(style = SpanStyle(fontFamily = font1, fontSize = 36.sp)) {
+                    appendLine("/${data}${extra.unit}")
+                }
+            } else {
+                withStyle(style = SpanStyle(fontFamily = font1, fontSize = 46.sp)) {
+                    appendLine("${data}${extra.unit}")
+                }
             }
             withStyle(style = SpanStyle(fontFamily = font2, fontSize = 14.sp)) {
                 append("Expires on:\n${expirationDate.toLocalDate()}")
@@ -69,14 +75,15 @@ fun ExtraGraph(
     Canvas(modifier = modifier
         .height(128.dp)
         .clip(MaterialTheme.shapes.medium)
-        .background(MaterialTheme.colorScheme.background)
     ) {
-        val width = used.toFloat() / safeMax * size.width
-        if (used != 0L) {
-            drawRect(
-                color = primaryColor,
-                size = Size(width - min(width, 0.5.dp.toPx()), size.height)
-            )
+        if (!showOnlyMax) {
+            val width = used.toFloat() / safeMax * size.width
+            if (used != 0L) {
+                drawRect(
+                    color = primaryColor,
+                    size = Size(width - min(width, 0.5.dp.toPx()), size.height)
+                )
+            }
         }
 
         val textMeasure = textMeasurer.measure(
