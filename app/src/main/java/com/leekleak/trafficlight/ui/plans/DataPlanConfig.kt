@@ -12,14 +12,10 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.animation.shrinkVertically
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -146,6 +142,7 @@ import com.leekleak.trafficlight.util.DataSize
 import com.leekleak.trafficlight.util.DataSizeUnit
 import com.leekleak.trafficlight.util.PageTitle
 import com.leekleak.trafficlight.util.SearchField
+import com.leekleak.trafficlight.util.SlideAnimatedVisibility
 import com.leekleak.trafficlight.util.TOP_BAR_HEIGHT
 import com.leekleak.trafficlight.util.categoryTitleSmall
 import com.leekleak.trafficlight.util.fromTimestamp
@@ -343,14 +340,10 @@ fun DataPlanConfig(currentPlan: DataPlan) {
             }
             categoryTitleSmall { stringResource(R.string.notifications) }
             item {
-                val notificationPermission by permissionManager.notificationPermissionFlow.collectAsState(true)
+                val notificationPermission by permissionManager.notificationPermissionFlow.collectAsState()
                 val notificationPermissionCallback = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
 
-                AnimatedVisibility(
-                    visible = !notificationPermission,
-                    enter = fadeIn(tween()) + slideInVertically() + expandVertically(),
-                    exit = fadeOut(tween()) + slideOutVertically() + shrinkVertically()
-                ) {
+                SlideAnimatedVisibility(!notificationPermission) {
                     PermissionCard(
                         title = stringResource(R.string.notification_permission),
                         description = stringResource(R.string.allow_app_to_send_notifications),
@@ -377,11 +370,7 @@ fun DataPlanConfig(currentPlan: DataPlan) {
                         }
                     },
                 )
-                AnimatedVisibility(
-                    visible = newPlan.notification && Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA,
-                    enter = fadeIn(tween()) + slideInVertically() + expandVertically(),
-                    exit = fadeOut(tween()) + slideOutVertically() + shrinkVertically()
-                ) {
+                SlideAnimatedVisibility(newPlan.notification && Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
                     Row (
                         modifier = Modifier.height(IntrinsicSize.Min),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)

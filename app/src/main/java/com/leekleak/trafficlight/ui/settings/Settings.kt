@@ -5,14 +5,7 @@ import android.os.Build
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -48,6 +41,7 @@ import com.leekleak.trafficlight.ui.theme.card
 import com.leekleak.trafficlight.ui.theme.googleSans
 import com.leekleak.trafficlight.util.CategoryTitleSmallText
 import com.leekleak.trafficlight.util.PageTitle
+import com.leekleak.trafficlight.util.SlideAnimatedVisibility
 import com.leekleak.trafficlight.util.categoryTitleSmall
 import com.leekleak.trafficlight.util.openLink
 import com.leekleak.trafficlight.util.px
@@ -75,13 +69,9 @@ fun Settings(paddingValues: PaddingValues) {
         contentPadding = paddingValues
     ) {
         item {
-            val backgroundPermission by permissionManager.backgroundPermissionFlow.collectAsState(true)
+            val backgroundPermission by permissionManager.backgroundPermissionFlow.collectAsState()
 
-            AnimatedVisibility(
-                visible = !backgroundPermission,
-                enter = fadeIn(tween()) + slideInVertically() + expandVertically(),
-                exit = fadeOut(tween()) + slideOutVertically() + shrinkVertically()
-            ) {
+            SlideAnimatedVisibility(!backgroundPermission) {
                 CategoryTitleSmallText(stringResource(R.string.missing_permissions))
                 PermissionCard(
                     title = stringResource(R.string.battery_optimization),
@@ -95,14 +85,10 @@ fun Settings(paddingValues: PaddingValues) {
         categoryTitleSmall { stringResource(R.string.notifications) }
         item {
             val notification by viewModel.notification.collectAsState()
-            val notificationPermission by permissionManager.notificationPermissionFlow.collectAsState(true)
+            val notificationPermission by permissionManager.notificationPermissionFlow.collectAsState()
             val notificationPermissionCallback = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
 
-            AnimatedVisibility(
-                visible = !notificationPermission,
-                enter = fadeIn(tween()) + slideInVertically() + expandVertically(),
-                exit = fadeOut(tween()) + slideOutVertically() + shrinkVertically()
-            ) {
+            SlideAnimatedVisibility(!notificationPermission) {
                 PermissionCard(
                     title = stringResource(R.string.notification_permission),
                     description = stringResource(R.string.allow_app_to_send_notifications),
@@ -129,11 +115,8 @@ fun Settings(paddingValues: PaddingValues) {
                     }
                 },
             )
-            AnimatedVisibility(
-                visible = notification,
-                enter = fadeIn(tween()) + slideInVertically() + expandVertically(),
-                exit = fadeOut(tween()) + slideOutVertically() + shrinkVertically()
-            ) {
+
+            SlideAnimatedVisibility(notification) {
                 NavigatePreference(
                     title = stringResource(R.string.advanced_settings),
                     icon = painterResource(R.drawable.notification_settings),
