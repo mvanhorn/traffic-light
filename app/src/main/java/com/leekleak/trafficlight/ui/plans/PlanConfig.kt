@@ -33,7 +33,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -58,11 +57,12 @@ import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MediumExtendedFloatingActionButton
 import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SelectableDates
@@ -125,6 +125,7 @@ import com.leekleak.trafficlight.database.DataPlan
 import com.leekleak.trafficlight.database.DataPlanDao
 import com.leekleak.trafficlight.database.DataPlanExtra
 import com.leekleak.trafficlight.database.TimeInterval
+import com.leekleak.trafficlight.integrations.ShizukuServicesProvider
 import com.leekleak.trafficlight.model.AppManager
 import com.leekleak.trafficlight.model.DataUID
 import com.leekleak.trafficlight.model.NetworkUsageManager
@@ -170,6 +171,7 @@ fun PlanConfig(currentPlan: DataPlan) {
     val appManager: AppManager = koinInject()
     val dataPlanDao: DataPlanDao = koinInject()
     val networkUsageManager: NetworkUsageManager = koinInject()
+    val shizukuServicesProvider: ShizukuServicesProvider = koinInject()
 
     val scope = rememberCoroutineScope()
     val navigator: Navigator = koinInject()
@@ -180,36 +182,54 @@ fun PlanConfig(currentPlan: DataPlan) {
     val activity = LocalActivity.current
 
     var newPlan by remember(currentPlan) { mutableStateOf(currentPlan.copy()) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
-    Scaffold(
-        bottomBar = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .navigationBarsPadding()
-                    .padding(16.dp),
-                contentAlignment = Alignment.BottomEnd
-            ) {
-                ExtendedFloatingActionButton (
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text(stringResource(R.string.delete_plan)) },
+            text = { Text(stringResource(R.string.delete_plan_confirmation)) },
+            confirmButton = {
+                TextButton(
                     onClick = {
                         scope.launch(Dispatchers.IO) {
-                            newPlan.resetUsage()
-                            newPlan.updateUsage(networkUsageManager)
-                            newPlan = newPlan.copy(lastSafetyState = -1, budgetOvershotNotified = false)
-                            dataPlanDao.add(newPlan)
-                            haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
+                            dataPlanDao.delete(currentPlan.hashedSubscriberID)
+                            shizukuServicesProvider.updateSimData()
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             navigator.goBack()
                         }
                     }
                 ) {
-                    Row (horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Icon(
-                            painter = painterResource(R.drawable.save),
-                            contentDescription = null
-                        )
-                        Text(stringResource(R.string.save))
+                    Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
+    Scaffold(
+        floatingActionButton = {
+            MediumExtendedFloatingActionButton(
+                onClick = {
+                    scope.launch(Dispatchers.IO) {
+                        newPlan.resetUsage()
+                        newPlan.updateUsage(networkUsageManager)
+                        newPlan = newPlan.copy(lastSafetyState = -1, budgetOvershotNotified = false)
+                        dataPlanDao.add(newPlan)
+                        haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
+                        navigator.goBack()
                     }
                 }
+            ) {
+                Icon(
+                    modifier = Modifier.size(32.dp),
+                    painter = painterResource(R.drawable.save),
+                    contentDescription = stringResource(R.string.save)
+                )
             }
         }
     ) { paddingValues ->
@@ -447,7 +467,22 @@ fun PlanConfig(currentPlan: DataPlan) {
                 }
             }
         }
-        PageTitle (true, hazeState, stringResource(R.string.configure_plan))
+        PageTitle (
+            backButton = true,
+            hazeState = hazeState,
+            text = stringResource(R.string.configure_plan),
+            customElement = {
+                IconButton(
+                    modifier = Modifier.align(Alignment.CenterEnd),
+                    onClick = { showDeleteDialog = true }
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.deleted),
+                        contentDescription = stringResource(R.string.delete),
+                    )
+                }
+            }
+        )
     }
 }
 

@@ -79,7 +79,4 @@ data class DataSize (
 
         return Triple(first, second, third)
     }
-
-    companion object {
-    }
 }

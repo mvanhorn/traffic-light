@@ -3,7 +3,7 @@ package com.leekleak.trafficlight.integrations
 import com.leekleak.trafficlight.database.DataPlanRepository
 
 interface ShizukuServicesProvider {
-    fun updateSimData()
+    suspend fun updateSimData()
     fun shizukuRunning(): Boolean
     fun shizukuPermission(): Int
     fun shizukuRequestPermission()

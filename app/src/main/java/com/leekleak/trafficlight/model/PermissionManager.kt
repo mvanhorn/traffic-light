@@ -16,9 +16,7 @@ import android.widget.Toast
 import androidx.core.net.toUri
 import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.database.AppPreferenceRepo
-import com.leekleak.trafficlight.database.DataPlanRepository
 import com.leekleak.trafficlight.integrations.ShizukuServicesProvider
-import com.leekleak.trafficlight.integrations.updateSimDataBasic
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,7 +28,6 @@ class PermissionManager(
     private val context: Context,
     scope: CoroutineScope,
     appPreferenceRepo: AppPreferenceRepo,
-    dataPlanRepository: DataPlanRepository,
     private val shizukuServicesProvider: ShizukuServicesProvider
 ) {
     private val _backgroundPermission = MutableStateFlow(false)
@@ -62,7 +59,7 @@ class PermissionManager(
                     shizukuServicesProvider.enable()
                 } else if (!setting) {
                     shizukuServicesProvider.disable()
-                    updateSimDataBasic(dataPlanRepository)
+                    shizukuServicesProvider.updateSimData()
                 }
             }
         }

@@ -304,6 +304,9 @@ interface DataPlanDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addAll(plans: List<DataPlan>)
+
+    @Query("DELETE FROM dataplan WHERE hashedSubscriberID = :hashedID")
+    suspend fun delete(hashedID: String)
 }
 
 @Database(entities = [DataPlan::class], version = 4, exportSchema = true)

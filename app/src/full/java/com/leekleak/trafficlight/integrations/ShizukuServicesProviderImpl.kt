@@ -1,5 +1,6 @@
 package com.leekleak.trafficlight.integrations
 
+import android.content.pm.PackageManager
 import android.telephony.SubscriptionInfo
 import com.leekleak.shizukuintegration.ShizukuHelper
 import com.leekleak.trafficlight.BuildConfig
@@ -19,15 +20,15 @@ class ShizukuServicesProviderImpl(
         BuildConfig.DEBUG,
         BuildConfig.VERSION_CODE
     ) {
-        updateSimData()
+        scope.launch { updateSimData() }
     }
 
     private fun getSubscriptionInfos(): List<SubscriptionInfo> = shizukuHelper.getSubscriptionInfos()
 
     private fun getSubscriberID(subscriptionId: Int): String? = shizukuHelper.getSubscriberID(subscriptionId)
 
-    override fun updateSimData() {
-        scope.launch {
+    override suspend fun updateSimData() {
+        if (shizukuRunning() && shizukuPermission() == PackageManager.PERMISSION_GRANTED) {
             val infos = getSubscriptionInfos().sortedBy { it.simSlotIndex }
             val activeSubscriberIDs = infos.map { getSubscriberID(it.subscriptionId) }
             val plans = dataPlanDao.getAll().map { plan ->
@@ -43,6 +44,8 @@ class ShizukuServicesProviderImpl(
                 }
             }
             dataPlanDao.addAll(plans)
+        } else {
+            updateSimDataBasic(dataPlanRepository)
         }
     }
 
