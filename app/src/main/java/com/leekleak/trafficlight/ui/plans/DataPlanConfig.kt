@@ -16,6 +16,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -48,6 +49,7 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -90,6 +92,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.drawWithContent
@@ -141,6 +144,7 @@ import com.leekleak.trafficlight.ui.theme.card
 import com.leekleak.trafficlight.ui.theme.doHyeonFont
 import com.leekleak.trafficlight.ui.theme.googleSans
 import com.leekleak.trafficlight.ui.theme.longGoogleSans
+import com.leekleak.trafficlight.util.CategoryTitleSmallText
 import com.leekleak.trafficlight.util.DataSize
 import com.leekleak.trafficlight.util.DataSizeUnit
 import com.leekleak.trafficlight.util.PageTitle
@@ -156,6 +160,7 @@ import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.koin.compose.koinInject
 import java.text.DecimalFormat
 import java.text.NumberFormat
@@ -183,6 +188,21 @@ fun DataPlanConfig(currentPlan: DataPlan) {
 
     var newPlan by remember(currentPlan) { mutableStateOf(currentPlan.copy()) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+
+    val calculatedPlan by produceState(initialValue = newPlan, newPlan) {
+        val planToCalculate = newPlan.copy()
+        withContext(Dispatchers.IO) {
+            val tempPlan = planToCalculate.copy(
+                lastUpdateStamp = 0,
+                mainDataUsed = 0,
+                mainStartStamp = 0,
+                mainExpiryStamp = 0,
+                extras = planToCalculate.extras.map { it.copy(dataUsed = 0) }
+            )
+            tempPlan.updateUsage(networkUsageManager)
+            value = tempPlan
+        }
+    }
 
     if (showDeleteDialog) {
         AlertDialog(
@@ -220,7 +240,6 @@ fun DataPlanConfig(currentPlan: DataPlan) {
                 MediumFloatingActionButton(
                     onClick = {
                         scope.launch(Dispatchers.IO) {
-                            newPlan.resetUsage()
                             newPlan.updateUsage(networkUsageManager)
                             newPlan = newPlan.copy(
                                 lastSafetyState = -1,
@@ -251,12 +270,14 @@ fun DataPlanConfig(currentPlan: DataPlan) {
             contentPadding = paddingValues
         ) {
             item {
+                val isConfigured = remember { currentPlan.configured }
                 val size by remember { derivedStateOf {
                     newPlan.mainDataSize.getAsUnit(newPlan.mainDataSizeUnit)
                 } }
                 PlanSizeConfig (
                     size = size,
                     unit = newPlan.mainDataSizeUnit,
+                    enabled = !isConfigured,
                     onSizeUpdate = {
                         newPlan = newPlan.copy(mainDataSize = DataSize(it))
                     },
@@ -268,10 +289,35 @@ fun DataPlanConfig(currentPlan: DataPlan) {
                     }
                 )
             }
-            categoryTitleSmall { stringResource(R.string.type) }
-            typeConfig(newPlan) { newPlan = it }
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    CategoryTitleSmallText(stringResource(R.string.type))
+                    val font = remember { googleSans(weight = 600f) }
+                    Box(modifier = Modifier
+                        .background(MaterialTheme.colorScheme.primary, MaterialTheme.shapes.medium)
+                        .padding(horizontal = 8.dp, vertical = 2.dp))
+                    {
+                        AnimatedContent(
+                            targetState = DataSize(calculatedPlan.mainDataUsed).toString(),
+                            transitionSpec = { fadeIn().togetherWith(fadeOut()) }
+                        ) {
+                            Text(
+                                text = it,
+                                fontFamily = font,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
+
+                    }
+                }
+            }
+            typeConfig(newPlan, enabled = !currentPlan.configured) { newPlan = it }
             categoryTitleSmall { stringResource(R.string.extras) }
-            extrasConfig(newPlan) { newPlan = it }
+            extrasConfig(calculatedPlan) { newPlan = newPlan.copy(extras = it.extras) }
             categoryTitleSmall { stringResource(R.string.zero_rated_apps) }
             item {
                 val suspiciousApps by produceState(emptyList()) { value = appManager.getAllApps() }
@@ -487,7 +533,7 @@ fun DataPlanConfig(currentPlan: DataPlan) {
 }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
-private fun LazyListScope.typeConfig(newPlan: DataPlan, onPlanChange: (plan: DataPlan) -> Unit) {
+private fun LazyListScope.typeConfig(newPlan: DataPlan, enabled: Boolean = true, onPlanChange: (plan: DataPlan) -> Unit) {
     item {
         val haptic = LocalHapticFeedback.current
         Column(
@@ -505,6 +551,7 @@ private fun LazyListScope.typeConfig(newPlan: DataPlan, onPlanChange: (plan: Dat
             ) {
                 toggleableItem(
                     checked = interval == TimeInterval.MONTH,
+                    enabled = enabled,
                     label = monthlyString,
                     icon = {
                         Icon(
@@ -520,6 +567,7 @@ private fun LazyListScope.typeConfig(newPlan: DataPlan, onPlanChange: (plan: Dat
                 )
                 toggleableItem(
                     checked = interval == TimeInterval.DAY,
+                    enabled = enabled,
                     label = customString,
                     icon = {
                         Icon(
@@ -548,6 +596,7 @@ private fun LazyListScope.typeConfig(newPlan: DataPlan, onPlanChange: (plan: Dat
                             title = stringResource(R.string.reset_day),
                             icon = painterResource(R.drawable.history_2),
                             value = selectedMonthDay.toLong(),
+                            enabled = enabled,
                             values = remember { (1L..28L).map { it to null } },
                             onValueChanged = {
                                 val newDate =
@@ -563,12 +612,14 @@ private fun LazyListScope.typeConfig(newPlan: DataPlan, onPlanChange: (plan: Dat
                             summary = stringResource(R.string.recursion_description),
                             icon = painterResource(R.drawable.repeat),
                             value = newPlan.recurring,
+                            enabled = enabled,
                             onValueChanged = { onPlanChange(newPlan.copy(recurring = it)) }
                         )
                     }
                 } else {
                     CustomPlanSetup(
                         newPlan = newPlan,
+                        enabled = enabled,
                         onChange = { date, time, multiplier ->
                             onPlanChange(
                                 newPlan.copy(
@@ -586,7 +637,7 @@ private fun LazyListScope.typeConfig(newPlan: DataPlan, onPlanChange: (plan: Dat
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-private fun CustomPlanSetup(newPlan: DataPlan, onChange: (date:LocalDate, time: LocalTime, multiplier: Int) -> Unit) {
+private fun CustomPlanSetup(newPlan: DataPlan, enabled: Boolean = true, onChange: (date:LocalDate, time: LocalTime, multiplier: Int) -> Unit) {
     var selectedDate by remember { mutableStateOf(fromTimestamp(newPlan.startDate).toLocalDate()) }
     var selectedTime by remember { mutableStateOf(fromTimestamp(newPlan.startDate).toLocalTime()) }
 
@@ -612,6 +663,7 @@ private fun CustomPlanSetup(newPlan: DataPlan, onChange: (date:LocalDate, time: 
         selectedTime,
         datePickerState,
         timePickerState,
+        enabled = enabled,
         onDateSelect = {selectedDate = it},
         onTimeSelect = {selectedTime = it}
     ) { fontFamily ->
@@ -620,6 +672,7 @@ private fun CustomPlanSetup(newPlan: DataPlan, onChange: (date:LocalDate, time: 
                 modifier = Modifier.width(IntrinsicSize.Max)
             ) {
                 Row(
+                    modifier = Modifier.alpha(if (enabled) 1f else 0.38f),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -634,7 +687,7 @@ private fun CustomPlanSetup(newPlan: DataPlan, onChange: (date:LocalDate, time: 
                         .fillMaxWidth()
                         .padding(vertical = 2.dp)
                         .clip(MaterialTheme.shapes.medium)
-                        .background(MaterialTheme.colorScheme.primary)
+                        .background(if (enabled) MaterialTheme.colorScheme.primary else ButtonDefaults.buttonColors().disabledContainerColor)
                         .padding(horizontal = 6.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally)
@@ -642,15 +695,16 @@ private fun CustomPlanSetup(newPlan: DataPlan, onChange: (date:LocalDate, time: 
                     BasicTextField(
                         modifier = Modifier.width(IntrinsicSize.Min),
                         state = textFieldState,
+                        readOnly = !enabled,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         inputTransformation = InputTransformation.maxLength(3),
-                        textStyle = MaterialTheme.typography.titleMediumEmphasized.copy(color = MaterialTheme.colorScheme.onPrimary),
+                        textStyle = MaterialTheme.typography.titleMediumEmphasized.copy(color = if (enabled) MaterialTheme.colorScheme.onPrimary else ButtonDefaults.buttonColors().disabledContentColor),
                         cursorBrush = SolidColor(MaterialTheme.colorScheme.onPrimary),
                     )
                     Text(
                         text = stringResource(R.string.days),
                         textAlign = TextAlign.Center,
-                        color = MaterialTheme.colorScheme.onPrimary,
+                        color = if (enabled) MaterialTheme.colorScheme.onPrimary else ButtonDefaults.buttonColors().disabledContentColor,
                         style = MaterialTheme.typography.titleMediumEmphasized
                     )
                 }
@@ -665,6 +719,7 @@ private fun DateAndTimePicker(
     selectedTime: LocalTime?,
     datePickerState: DatePickerState,
     timePickerState: TimePickerState,
+    enabled: Boolean = true,
     onDateSelect: (date: LocalDate) -> Unit,
     onTimeSelect: (time: LocalTime) -> Unit,
     extraItems: LazyListScope.(font: FontFamily) -> Unit = {}
@@ -681,6 +736,7 @@ private fun DateAndTimePicker(
         item {
             Column {
                 Row(
+                    modifier = Modifier.alpha(if (enabled) 1f else 0.38f),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -692,6 +748,7 @@ private fun DateAndTimePicker(
                 }
                 Button(
                     shape = MaterialTheme.shapes.medium,
+                    enabled = enabled,
                     onClick = { datePickerVisible = true }
                 ) {
                     Text(
@@ -704,6 +761,7 @@ private fun DateAndTimePicker(
         item {
             Column {
                 Row(
+                    modifier = Modifier.alpha(if (enabled) 1f else 0.38f),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -715,6 +773,7 @@ private fun DateAndTimePicker(
                 }
                 Button(
                     shape = MaterialTheme.shapes.medium,
+                    enabled = enabled,
                     onClick = { timePickerVisible = true }
                 ) {
                     Text(
@@ -731,8 +790,6 @@ private fun DateAndTimePicker(
             onDismissRequest = { datePickerVisible = false },
             confirmButton = {
                 Button(
-                    enabled = datePickerState.getSelectedDate()?.let { it <= LocalDate.now() }
-                        ?: false,
                     onClick = {
                         datePickerVisible = false
                         datePickerState.getSelectedDate()?.let { onDateSelect(it) }
@@ -874,6 +931,7 @@ fun BackgroundSelector(i: Int, newPlan: DataPlan, onClick: () -> Unit) {
 fun PlanSizeConfig(
     size: Double,
     unit: DataSizeUnit,
+    enabled: Boolean = true,
     onSizeUpdate: (Long) -> Unit,
     onUnitUpdate: (DataSizeUnit) -> Unit
 ) {
@@ -886,7 +944,7 @@ fun PlanSizeConfig(
     ) {
         val shape = wifiShape().toPath()
         val shapeSizeBase = 172.dp.px
-        val shapeColor = MaterialTheme.colorScheme.primaryContainer
+        val shapeColor = if (enabled) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainer
         val scale = remember { Animatable(0f) }
         val haptic = LocalHapticFeedback.current
 
@@ -905,12 +963,14 @@ fun PlanSizeConfig(
             TextFieldState(formatter.format(size))
         }
 
-        LaunchedEffect(fieldState.text) {
+        LaunchedEffect(fieldState.text, enabled) {
             val number = try { numberFormat.parse(fieldState.text.toString()) } catch (_: Exception) { null }
             if (number != null) {
-                onSizeUpdate((number.toFloat() * unit.toBits()).toLong())
+                if (enabled) {
+                    onSizeUpdate((number.toFloat() * unit.toBits()).toLong())
+                }
                 scale.animateTo(
-                    targetValue = (1 * (1 - E.pow(-number.toFloat() * 0.1))).toFloat(),
+                    targetValue = (0.75 * (1 - E.pow(-number.toFloat() * 0.1))).toFloat(),
                     animationSpec = spring(
                         dampingRatio = Spring.DampingRatioMediumBouncy,
                         stiffness = Spring.StiffnessMedium
@@ -945,6 +1005,7 @@ fun PlanSizeConfig(
                     modifier = Modifier
                         .width(IntrinsicSize.Min)
                         .alignByBaseline(),
+                    readOnly = !enabled,
                     inputTransformation = InputTransformation {
                         val newText = asCharSequence().toString()
                         if (newText.isEmpty()) {
@@ -959,9 +1020,9 @@ fun PlanSizeConfig(
                     textStyle = TextStyle(
                         fontFamily = fontFamilyDoHyeon,
                         fontSize = 64.sp,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        color = if (enabled) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f),
                         textAlign = TextAlign.End,
-                        textDecoration = TextDecoration.Underline
+                        textDecoration = if (enabled) TextDecoration.Underline else TextDecoration.None
                     ),
                     cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                     lineLimits = TextFieldLineLimits.SingleLine,
@@ -970,8 +1031,8 @@ fun PlanSizeConfig(
                     modifier = Modifier
                         .alignBy { it.measuredHeight }
                         .clip(MaterialTheme.shapes.medium)
-                        .background(MaterialTheme.colorScheme.onPrimaryContainer)
-                        .clickable {
+                        .background(if (enabled) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f))
+                        .clickable(enabled = enabled) {
                             onUnitUpdate(if (unit == DataSizeUnit.GB) DataSizeUnit.MB else DataSizeUnit.GB)
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         }
@@ -979,7 +1040,7 @@ fun PlanSizeConfig(
                     fontFamily = fontFamilyDoHyeon,
                     fontSize = 24.sp,
                     maxLines = 1,
-                    color = MaterialTheme.colorScheme.primaryContainer,
+                    color = if (enabled) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainer,
                     text = unit.name
                 )
             }
@@ -1006,7 +1067,7 @@ private fun LazyListScope.extrasConfig(newPlan: DataPlan, onPlanChange: (plan: D
                                     .fillMaxWidth()
                                     .background(MaterialTheme.colorScheme.surfaceContainer, MaterialTheme.shapes.medium),
                                 extra = item,
-                                showOnlyMax = true
+                                showOnlyMax = false
                             )
                             FilledIconButton(
                                 onClick = {

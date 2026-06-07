@@ -243,7 +243,7 @@ fun SliderComponent(
         values.indexOfFirst { it.first == value }.coerceAtLeast(0)
     }
 
-    Column(modifier = modifier) {
+    Column(modifier = modifier.alpha(if (enabled) 1f else 0.38f)) {
         Row(
             modifier = Modifier.padding(top = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -259,54 +259,54 @@ fun SliderComponent(
                 style = MaterialTheme.typography.titleMedium,
             )
         }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                val interactionSource = remember { MutableInteractionSource() }
-                Slider(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 8.dp),
-                    value = currentIndex.toFloat(),
-                    onValueChange = {
-                        val newIndex = it.roundToInt()
-                        if (newIndex != currentIndex && newIndex in values.indices) {
-                            haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
-                            onValueChanged(values[newIndex].first)
-                        }
-                    },
-                    thumb = {
-                        SliderDefaults.Thumb(
-                            interactionSource = interactionSource,
-                            thumbSize = DpSize(4.dp, 28.dp)
-                        )
-                    },
-                    interactionSource = interactionSource,
-                    enabled = enabled,
-                    valueRange = 0f..((values.size - 1).coerceAtLeast(0).toFloat()),
-                    steps = (values.size - 2).coerceAtLeast(0)
-                )
-                val valueLabel = remember(currentIndex, values) {
-                    val pair = values.getOrNull(currentIndex)
-                    pair?.second ?: pair?.first?.toString() ?: ""
-                }
-                AnimatedContent(
-                    targetState = valueLabel,
-                    transitionSpec = {
-                        (slideInVertically{ -it / 2 } + fadeIn()).togetherWith(
-                            (slideOutVertically { it / 2 }) + fadeOut()
-                        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            val interactionSource = remember { MutableInteractionSource() }
+            Slider(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 8.dp),
+                value = currentIndex.toFloat(),
+                onValueChange = {
+                    val newIndex = it.roundToInt()
+                    if (newIndex != currentIndex && newIndex in values.indices) {
+                        haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                        onValueChanged(values[newIndex].first)
                     }
-                ) {
-                    Text(
-                        modifier = modifierLabelText.padding(start = 16.dp),
-                        text = it,
-                        fontFamily = fontFamilyBold,
-                        textAlign = TextAlign.Center,
-                        overflow = TextOverflow.Visible,
-                        softWrap = false,
+                },
+                thumb = {
+                    SliderDefaults.Thumb(
+                        interactionSource = interactionSource,
+                        thumbSize = DpSize(4.dp, 28.dp)
+                    )
+                },
+                interactionSource = interactionSource,
+                enabled = enabled,
+                valueRange = 0f..((values.size - 1).coerceAtLeast(0).toFloat()),
+                steps = (values.size - 2).coerceAtLeast(0)
+            )
+            val valueLabel = remember(currentIndex, values) {
+                val pair = values.getOrNull(currentIndex)
+                pair?.second ?: pair?.first?.toString() ?: ""
+            }
+            AnimatedContent(
+                targetState = valueLabel,
+                transitionSpec = {
+                    (slideInVertically{ -it / 2 } + fadeIn()).togetherWith(
+                        (slideOutVertically { it / 2 }) + fadeOut()
                     )
                 }
+            ) {
+                Text(
+                    modifier = modifierLabelText.padding(start = 16.dp),
+                    text = it,
+                    fontFamily = fontFamilyBold,
+                    textAlign = TextAlign.Center,
+                    overflow = TextOverflow.Visible,
+                    softWrap = false,
+                )
             }
         }
+    }
 }
 
 @Composable
