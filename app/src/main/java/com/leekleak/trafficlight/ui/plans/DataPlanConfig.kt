@@ -114,6 +114,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -257,8 +258,7 @@ fun DataPlanConfig(currentPlan: DataPlan) {
                     size = size,
                     unit = newPlan.mainDataSizeUnit,
                     onSizeUpdate = {
-                        val data = DataSize((it * newPlan.mainDataSizeUnit.toBits()).toLong())
-                        newPlan = newPlan.copy(mainDataSize = data)
+                        newPlan = newPlan.copy(mainDataSize = DataSize(it))
                     },
                     onUnitUpdate = {
                         newPlan = newPlan.copy(
@@ -874,7 +874,7 @@ fun BackgroundSelector(i: Int, newPlan: DataPlan, onClick: () -> Unit) {
 fun PlanSizeConfig(
     size: Double,
     unit: DataSizeUnit,
-    onSizeUpdate: (Float) -> Unit,
+    onSizeUpdate: (Long) -> Unit,
     onUnitUpdate: (DataSizeUnit) -> Unit
 ) {
     Box(
@@ -899,7 +899,7 @@ fun PlanSizeConfig(
             shape.copy().apply { transform(matrix) }
         }
 
-        val formatter = remember { DecimalFormat("0.#") }
+        val formatter = remember { DecimalFormat("0.###") }
         val numberFormat = remember { NumberFormat.getInstance() }
         val fieldState = remember(size) {
             TextFieldState(formatter.format(size))
@@ -908,7 +908,7 @@ fun PlanSizeConfig(
         LaunchedEffect(fieldState.text) {
             val number = try { numberFormat.parse(fieldState.text.toString()) } catch (_: Exception) { null }
             if (number != null) {
-                onSizeUpdate(number.toFloat())
+                onSizeUpdate((number.toFloat() * unit.toBits()).toLong())
                 scale.animateTo(
                     targetValue = (1 * (1 - E.pow(-number.toFloat() * 0.1))).toFloat(),
                     animationSpec = spring(
@@ -945,7 +945,7 @@ fun PlanSizeConfig(
                     modifier = Modifier
                         .width(IntrinsicSize.Min)
                         .alignByBaseline(),
-                    inputTransformation =  InputTransformation {
+                    inputTransformation = InputTransformation {
                         val newText = asCharSequence().toString()
                         if (newText.isEmpty()) {
                             replace(0, length, "0")
@@ -961,8 +961,9 @@ fun PlanSizeConfig(
                         fontSize = 64.sp,
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                         textAlign = TextAlign.End,
+                        textDecoration = TextDecoration.Underline
                     ),
-                    cursorBrush = SolidColor(MaterialTheme.colorScheme.surface),
+                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                     lineLimits = TextFieldLineLimits.SingleLine,
                 )
                 Text(
