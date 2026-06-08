@@ -150,6 +150,7 @@
     <string name="amount">Amount</string>
     <string name="expiry">Expiry</string>
     <string name="start">Start</string>
+    <string name="doesn_t_work">Doesn\'t work?</string>
     <plurals name="resets_in_days">
         <item quantity="one">Resets tomorrow</item>
         <item quantity="other">Resets in %d days</item>

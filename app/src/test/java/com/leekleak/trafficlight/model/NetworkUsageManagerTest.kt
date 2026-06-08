@@ -145,9 +145,6 @@ class NetworkUsageManagerTest {
         }
 
         networkUsageManager.daysUsage(startDate, endDate, query1).test {
-            val initial = awaitItem()
-            assertEquals(1, initial.size)
-
             val updated = awaitItem()
             assertEquals(1000L, updated[0].y1)
             

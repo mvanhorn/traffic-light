@@ -182,14 +182,9 @@ fun NotificationSettings(paddingValues: PaddingValues) {
                         }
                     )
                     NavigatePreference(
-                        title = stringResource(R.string.help),
+                        title = stringResource(R.string.doesn_t_work),
                         icon = painterResource(R.drawable.help),
-                        onClick = {
-                            openLink(
-                                activity,
-                                "https://github.com/leekleak/traffic-light/wiki/Hide-status-bar-icon-when-disconnected"
-                            )
-                        }
+                        onClick = { openLink(activity, "https://github.com/leekleak/traffic-light/wiki/Troubleshooting#notification-doesnt-get-silenced") },
                     )
                 }
             }
