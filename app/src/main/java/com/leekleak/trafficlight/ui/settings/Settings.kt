@@ -64,9 +64,9 @@ fun Settings(paddingValues: PaddingValues) {
     val scope = rememberCoroutineScope()
     val hazeState = rememberHazeState()
 
-    var showForegroundNotificationWarning by remember { mutableStateOf(false) }
-    if (showForegroundNotificationWarning) {
-        NotificationWarningDialog(onDismiss = { showForegroundNotificationWarning = false })
+    var showWarning by remember { mutableStateOf(false) }
+    if (showWarning) {
+        NotificationWarningDialog(onDismiss = { showWarning = false })
     }
 
     LazyColumn(
@@ -119,7 +119,7 @@ fun Settings(paddingValues: PaddingValues) {
                 enabled = notificationPermission,
                 onValueChanged = {
                     if (it && Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA && activePlanNotificationsCount > 0) {
-                        showForegroundNotificationWarning = true
+                        showWarning = true
                     }
                     scope.launch {
                         appPreferenceRepo.setNotification(it)
