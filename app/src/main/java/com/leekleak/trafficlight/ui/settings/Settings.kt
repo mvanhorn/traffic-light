@@ -143,6 +143,12 @@ fun Settings(paddingValues: PaddingValues) {
                 val shizukuTracking by appPreferenceRepo.shizukuTracking.collectAsState(false)
                 val shizukuPermission by permissionManager.shizukuPermissionFlow.collectAsState(false)
                 val shizukuRunning by permissionManager.shizukuRunningFlow.collectAsState(false)
+                var expectingPermissionChange by remember { mutableStateOf(false) }
+                LaunchedEffect(shizukuPermission) {
+                    if (shizukuPermission && expectingPermissionChange) {
+                        scope.launch { appPreferenceRepo.setShizukuTracking(true) }
+                    }
+                }
                 SwitchPreference(
                     title = stringResource(R.string.multi_sim_tracking),
                     summary = if (shizukuRunning) stringResource(R.string.shizuku_required) else stringResource(R.string.shizuku_not_running),
@@ -151,11 +157,10 @@ fun Settings(paddingValues: PaddingValues) {
                     enabled = shizukuRunning,
                     onValueChanged = {
                         if (shizukuPermission) {
-                            scope.launch {
-                                appPreferenceRepo.setShizukuTracking(it)
-                            }
+                            scope.launch { appPreferenceRepo.setShizukuTracking(it) }
                         } else {
                             shizukuServicesProvider.shizukuRequestPermission()
+                            expectingPermissionChange = true
                         }
                     },
                 )
