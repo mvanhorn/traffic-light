@@ -12,6 +12,7 @@ import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -178,6 +179,19 @@ private fun OverviewHero(scrollState: ScrollState) {
 
     val offset by animateFloatAsState(if (pressed) 132.dp.px else 116.dp.px)
 
+    LaunchedEffect(interactionSource) {
+        interactionSource.interactions.collect { interaction ->
+            when (interaction) {
+                is PressInteraction.Press -> {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                }
+                is PressInteraction.Release, is PressInteraction.Cancel -> {
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                }
+            }
+        }
+    }
+
     val scheme = colorScheme
     val shape1 = Cookie12Sided.toPath()
     val shapeScale = 336.dp.px
@@ -252,13 +266,6 @@ private fun OverviewHero(scrollState: ScrollState) {
             val fontFamily1 = remember(weight, width) { googleSans(weight = weight, width = width, roundness = 100f) }
             val fontFamily2 = remember(weight, width) { googleSans(weight = weight + 200f, width = width + 70f, roundness = 50f) }
 
-            LaunchedEffect(pressed) {
-                if (pressed) {
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                } else {
-                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                }
-            }
             Text(
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
