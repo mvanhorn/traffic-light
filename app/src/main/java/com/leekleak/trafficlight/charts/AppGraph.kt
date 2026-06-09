@@ -22,12 +22,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.database.AppUsage
 import com.leekleak.trafficlight.ui.theme.googleSans
+import com.leekleak.trafficlight.ui.theme.googleSansEmphasized
 import com.leekleak.trafficlight.util.DataSize
 import com.leekleak.trafficlight.util.toSp
 
@@ -41,6 +45,19 @@ fun AppGraph(
     BoxWithConstraints(
         Modifier.fillMaxWidth().padding(8.dp)
     ) {
+        if (data.isEmpty()) {
+            val font = remember { googleSansEmphasized() }
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                text = stringResource(R.string.no_usage_detected),
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontFamily = font
+            )
+            return@BoxWithConstraints
+        }
         val maxBarWidth = maxWidth - 52.dp
         val maxUsage = data.firstOrNull()?.usage?.totalUsage?.toFloat() ?: return@BoxWithConstraints
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {

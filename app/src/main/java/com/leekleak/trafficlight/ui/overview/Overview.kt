@@ -1,6 +1,5 @@
 package com.leekleak.trafficlight.ui.overview
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat
@@ -9,7 +8,6 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -326,20 +324,13 @@ fun OverviewItems() {
     val viewModel: OverviewVM = koinViewModel()
     val data by viewModel.weekUsage.collectAsState()
     val topAppsList by viewModel.topApps.collectAsState()
-    AnimatedVisibility(
-        visible = topAppsList.isNotEmpty(),
-        enter = expandVertically()
+    CategoryTitleText(stringResource(R.string.top_apps))
+    Box(
+        modifier = Modifier
+            .card()
+            .padding(6.dp)
     ) {
-        Column {
-            CategoryTitleText(stringResource(R.string.top_apps))
-            Box(
-                modifier = Modifier
-                    .card()
-                    .padding(6.dp)
-            ) {
-                AppGraph(topAppsList)
-            }
-        }
+        AppGraph(topAppsList)
     }
     Ad(AdType.NativeBanner)
     if (data.isNotEmpty()) {

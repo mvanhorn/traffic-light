@@ -143,7 +143,7 @@ import com.leekleak.trafficlight.ui.theme.backgrounds
 import com.leekleak.trafficlight.ui.theme.card
 import com.leekleak.trafficlight.ui.theme.doHyeonFont
 import com.leekleak.trafficlight.ui.theme.googleSans
-import com.leekleak.trafficlight.ui.theme.longGoogleSans
+import com.leekleak.trafficlight.ui.theme.googleSansEmphasized
 import com.leekleak.trafficlight.util.CategoryTitleSmallText
 import com.leekleak.trafficlight.util.DataSize
 import com.leekleak.trafficlight.util.DataSizeUnit
@@ -876,9 +876,10 @@ fun AppSelector(
                 Text(
                     modifier = Modifier.padding(start = 8.dp),
                     text = stringResource(R.string.no_apps),
-                    fontFamily = longGoogleSans(),
+                    fontFamily = googleSansEmphasized(),
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
