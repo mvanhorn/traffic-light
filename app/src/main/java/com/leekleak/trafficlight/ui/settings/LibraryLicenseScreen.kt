@@ -24,6 +24,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.leekleak.trafficlight.R
@@ -38,6 +40,7 @@ import dev.chrisbanes.haze.rememberHazeState
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LibraryLicenseScreen(paddingValues: PaddingValues) {
+    val haptic = LocalHapticFeedback.current
     val hazeState = rememberHazeState()
     val libraries by produceLibraries(R.raw.aboutlibraries)
 
@@ -89,7 +92,10 @@ fun LibraryLicenseScreen(paddingValues: PaddingValues) {
                     Modifier
                         .fillMaxWidth()
                         .card()
-                        .clickable { selectedLib = lib }
+                        .clickable {
+                            selectedLib = lib
+                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                        }
                         .padding(16.dp)
                 ) {
                     Text(

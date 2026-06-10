@@ -160,12 +160,16 @@ fun NavigatePreference(
     enabled: Boolean = true,
     showControl: Boolean = true
 ) {
+    val haptic = LocalHapticFeedback.current
     Preference(
         modifier = modifier,
         title = title,
         summary = summary,
         icon = icon,
-        onClick = onClick,
+        onClick = {
+            onClick()
+            haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
+        },
         enabled = enabled,
         controls =
             if (showControl) {
@@ -189,12 +193,16 @@ fun NavigatePreferenceIcon(
     onClick: () -> Unit = {},
     enabled: Boolean = true,
 ) {
+    val haptic = LocalHapticFeedback.current
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .padding(vertical = 4.dp)
             .card()
-            .clickable(enabled = enabled, onClick = onClick)
+            .clickable(enabled = enabled, onClick = {
+                onClick()
+                haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
+            })
             .padding(16.dp)
             .alpha(if (enabled) 1f else 0.38f),
     ) {

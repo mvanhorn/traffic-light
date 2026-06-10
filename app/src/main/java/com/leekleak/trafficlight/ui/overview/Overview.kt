@@ -99,6 +99,7 @@ fun Overview(
 ) {
     val viewModel: OverviewVM = koinViewModel()
     val navigator: Navigator = koinInject()
+    val haptic = LocalHapticFeedback.current
 
     val windowSizeClass = currentWindowAdaptiveInfoV2().windowSizeClass
 
@@ -151,7 +152,10 @@ fun Overview(
     PageTitle(false, hazeState, stringResource(R.string.today)) {
         IconButton(
             modifier = Modifier.align(Alignment.CenterEnd),
-            onClick = { navigator.goTo(SettingsKey) }
+            onClick = {
+                navigator.goTo(SettingsKey)
+                haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
+            }
         ) {
             Icon(
                 painterResource(R.drawable.settings),
