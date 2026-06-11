@@ -194,8 +194,7 @@ fun NavigatePreferenceIcon(
     enabled: Boolean = true,
 ) {
     val haptic = LocalHapticFeedback.current
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
+    Box(
         modifier = modifier
             .padding(vertical = 4.dp)
             .card()
@@ -203,10 +202,11 @@ fun NavigatePreferenceIcon(
                 onClick()
                 haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
             })
-            .padding(16.dp)
+            .padding(18.dp)
             .alpha(if (enabled) 1f else 0.38f),
     ) {
         Icon(
+            modifier = Modifier.size(24.dp),
             painter = icon,
             contentDescription = contentDescription,
         )

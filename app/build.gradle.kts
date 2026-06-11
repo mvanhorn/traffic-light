@@ -1,3 +1,5 @@
+import com.mikepenz.aboutlibraries.plugin.DuplicateMode
+import com.mikepenz.aboutlibraries.plugin.DuplicateRule
 import java.util.Properties
 
 plugins {
@@ -93,6 +95,14 @@ android {
         abortOnError = false
     }
 }
+
+aboutLibraries {
+    library {
+        duplicationMode = DuplicateMode.MERGE
+        duplicationRule = DuplicateRule.GROUP
+    }
+}
+
 
 dependencies {
     implementation(libs.androidx.core.ktx)
