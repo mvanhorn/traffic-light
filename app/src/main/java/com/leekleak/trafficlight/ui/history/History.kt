@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -82,7 +81,6 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.leekleak.trafficlight.R
@@ -712,26 +710,12 @@ fun AppItem(
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Row(
                                 modifier = Modifier.heightIn(min = 32.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    modifier = Modifier.weight(1f),
                                     text = name,
                                     fontWeight = FontWeight.Bold,
                                 )
-                                if (app != null && app.uid > -1) {
-                                    Text(
-                                        modifier = Modifier
-                                            .width(IntrinsicSize.Max)
-                                            .background(colorScheme.primary, MaterialTheme.shapes.small)
-                                            .padding(horizontal = 8.dp, vertical = 2.dp),
-                                        text = app.uid.toString(),
-                                        fontSize = 12.sp,
-                                        color = colorScheme.onPrimary,
-                                        fontWeight = FontWeight.Bold,
-                                    )
-                                }
                             }
                             LineGraphHeader()
                         }
@@ -766,7 +750,10 @@ fun AppItem(
                                         }
                                     }
                                 ) {
-                                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
                                         Icon(painterResource(R.drawable.custom), null)
                                         Text(stringResource(R.string.quick_filter))
                                     }

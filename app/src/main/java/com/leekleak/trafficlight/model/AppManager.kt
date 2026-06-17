@@ -53,7 +53,7 @@ class AppManager(context: Context, scope: CoroutineScope) {
     suspend fun getAllApps(): List<DataUIDApp> = allAppsDeferred.await()
 
     suspend fun getAppForUID(uid: Int): DataUID {
-        return getAllApps().plus(specialApps).find { it.uid == uid } ?: DataUIDSpecial(uid = uid, packageName = "", drawableResource = R.drawable.manufacturing, stringResource = R.string.system_service)
+        return getAllApps().plus(specialApps).find { it.uid == uid } ?: DataUIDService(uid = uid)
     }
 
     companion object {
@@ -109,11 +109,10 @@ class DataUIDSpecial(
         modifier: Modifier,
         tint: Color
     ) {
-        val context = LocalContext.current
         Icon(
             modifier = modifier,
             painter = painterResource(drawableResource),
-            contentDescription = getName(context),
+            contentDescription = getName(LocalContext.current),
             tint = tint
         )
     }
@@ -132,6 +131,24 @@ class DataUIDApp(
             modifier = modifier,
             painter = rememberAsyncImagePainter(AppIcon(packageName)),
             contentDescription = label
+        )
+    }
+}
+
+class DataUIDService(uid: Int) : DataUID(uid, "") {
+    override val uidQuery: Int? = if (uid == -100) null else uid
+    override fun getName(context: Context): String = context.getString(R.string.system_service, uid)
+
+    @Composable
+    override fun GetIcon(
+        modifier: Modifier,
+        tint: Color
+    ) {
+        Icon(
+            modifier = modifier,
+            painter = painterResource(R.drawable.manufacturing),
+            contentDescription = getName(LocalContext.current),
+            tint = tint
         )
     }
 }
