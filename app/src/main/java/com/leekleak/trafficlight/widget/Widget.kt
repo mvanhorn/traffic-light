@@ -15,6 +15,7 @@ import androidx.glance.GlanceTheme
 import androidx.glance.Image
 import androidx.glance.ImageProvider
 import androidx.glance.LocalContext
+import androidx.glance.LocalSize
 import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
@@ -129,7 +130,7 @@ class Widget: GlanceAppWidget() {
                             unitString = unitString,
                             progress = usageSize / max(dataMax, 1.0),
                             dataMax = dataMax,
-                            resetString = dataPlan.resetString(context)
+                            resetString = dataPlan.resetString(context),
                         )
                     } else {
                         UnconfiguredWidgetContent(
@@ -179,6 +180,10 @@ class Widget: GlanceAppWidget() {
         resetString: String,
         dataMax: Double
     ) {
+        val size = LocalSize.current
+        val usageFontSize = (size.width.value / 4).coerceIn(32f, 72f).sp
+        val unitFontSize = (usageFontSize.value * 0.56).sp
+
         Column(
             modifier = GlanceModifier.fillMaxSize(),
             verticalAlignment = Alignment.CenterVertically,
@@ -192,15 +197,17 @@ class Widget: GlanceAppWidget() {
                     text = usageString,
                     style = TextStyle(
                         color = GlanceTheme.colors.onSurface,
-                        fontSize = 64.sp,
+                        fontSize = usageFontSize,
                     ),
+                    maxLines = 1,
                 )
                 Text(
                     text = "${if (dataMax != 0.0) "/$quotaString" else "" }$unitString",
                     style = TextStyle(
                         color = GlanceTheme.colors.onSurface,
-                        fontSize = 36.sp,
+                        fontSize = unitFontSize,
                     ),
+                    maxLines = 1,
                 )
             }
         }
@@ -232,6 +239,10 @@ class Widget: GlanceAppWidget() {
 
     @Composable
     private fun UnconfiguredWidgetContent(usageString: String, unitString: String) {
+        val size = LocalSize.current
+        val usageFontSize = (size.width.value / 4).coerceIn(32f, 72f).sp
+        val unitFontSize = (usageFontSize.value * 0.56).sp
+
         Column(
             modifier = GlanceModifier.fillMaxSize(),
             verticalAlignment = Alignment.CenterVertically,
@@ -245,15 +256,17 @@ class Widget: GlanceAppWidget() {
                     text = usageString,
                     style = TextStyle(
                         color = GlanceTheme.colors.onSurface,
-                        fontSize = 64.sp,
+                        fontSize = usageFontSize,
                     ),
+                    maxLines = 1,
                 )
                 Text(
                     text = unitString,
                     style = TextStyle(
                         color = GlanceTheme.colors.onSurface,
-                        fontSize = 36.sp,
+                        fontSize = unitFontSize,
                     ),
+                    maxLines = 1,
                 )
             }
             Text(
@@ -303,7 +316,8 @@ class Widget: GlanceAppWidget() {
                         style = TextStyle(
                             color = GlanceTheme.colors.onSurface,
                             textAlign = TextAlign.End
-                        )
+                        ),
+                        maxLines = 1,
                     )
                 }
                 content()
