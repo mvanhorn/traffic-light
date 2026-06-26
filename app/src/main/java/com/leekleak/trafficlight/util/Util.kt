@@ -19,6 +19,8 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -63,8 +65,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -490,4 +495,15 @@ fun overlapRatio(range1: ClosedRange<Long>, range2: ClosedRange<Long>): Double {
     if (range1Length == 0L) return if (range2.contains(range1.start)) 1.0 else 0.0
 
     return overlapLength / (range1Length.toDouble())
+}
+
+@Composable
+fun Modifier.clearFocusOnTap(): Modifier {
+    val focusManager = LocalFocusManager.current
+    return this.pointerInput(Unit) {
+        awaitEachGesture {
+            awaitFirstDown(pass = PointerEventPass.Initial)
+            focusManager.clearFocus()
+        }
+    }
 }

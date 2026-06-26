@@ -156,6 +156,7 @@ import com.leekleak.trafficlight.util.SearchField
 import com.leekleak.trafficlight.util.SlideAnimatedVisibility
 import com.leekleak.trafficlight.util.TOP_BAR_HEIGHT
 import com.leekleak.trafficlight.util.categoryTitleSmall
+import com.leekleak.trafficlight.util.clearFocusOnTap
 import com.leekleak.trafficlight.util.fromTimestamp
 import com.leekleak.trafficlight.util.openLink
 import com.leekleak.trafficlight.util.px
@@ -248,6 +249,7 @@ fun DataPlanConfig(currentPlan: DataPlan) {
     val metric = LocalSizeMetric.current
 
     Scaffold(
+        modifier = Modifier.clearFocusOnTap(),
         bottomBar = {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(8.dp),
@@ -1335,6 +1337,7 @@ private fun AddExtraDialog(
             modifier = Modifier
                 .card()
                 .background(colorScheme.surface)
+                .clearFocusOnTap()
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
