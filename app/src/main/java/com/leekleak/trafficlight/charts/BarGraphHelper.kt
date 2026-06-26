@@ -6,26 +6,17 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.RoundRect
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.copy
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.Fill
-import androidx.compose.ui.graphics.drawscope.rotate
-import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.nativeCanvas
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.leekleak.trafficlight.util.DataSize
 import com.leekleak.trafficlight.util.NetworkType
-import com.leekleak.trafficlight.util.kb
 import kotlin.math.max
 
 internal data class BarGraphMetrics(
@@ -48,18 +39,16 @@ internal class BarGraphHelper(
     private val scope: DrawScope,
     private val yAxisData: List<Pair<Long, Long>>,
     private val xAxisData: List<String>,
-    private val showLegend: Boolean,
     private val stretch: List<Animatable<Float, *>>,
     private val metric: Boolean = false
 ) {
     internal val metrics = scope.buildMetrics()
 
     private fun DrawScope.buildMetrics(): BarGraphMetrics {
-        val yAxisPadding: Dp = if (showLegend) 36.dp else 0.dp
         val paddingBottom: Dp = 20.dp
 
         val gridHeight = size.height - paddingBottom.toPx()
-        val gridWidth = size.width - yAxisPadding.toPx()
+        val gridWidth = size.width
 
         val rectList = mutableListOf<Bar>()
 
@@ -158,42 +147,7 @@ internal class BarGraphHelper(
         }
     }
 
-    internal fun drawLegend(
-        offset: Offset,
-        color: Color,
-        background: Path,
-        icon: Painter,
-        iconColor: Color,
-        rotation: Float,
-    ) {
-        scope.run {
-            val backgroundCenter = Offset(18.dp.toPx(), 18.dp.toPx())
-            val iconSize = Size(24.dp.toPx(), 24.dp.toPx())
-            val iconOffset = Offset(6.dp.toPx(), 6.dp.toPx())
-            val matrix = Matrix().apply { scale(36.dp.toPx(), 36.dp.toPx()) }
-
-            translate (offset.x, offset.y) {
-                rotate(rotation, backgroundCenter) {
-                    drawPath(
-                        path = background.copy().apply { transform(matrix) },
-                        color = color,
-                        style = Fill,
-                    )
-
-                    translate (iconOffset.x, iconOffset.y) {
-                        with(icon) {
-                            draw(
-                                size = iconSize,
-                                colorFilter = ColorFilter.tint(iconColor)
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    internal fun drawTextLabelsOverXAndYAxis(color: Color, centerLabels: Boolean) {
+    internal fun drawTextLabelsOverXAndYAxis(color: Color) {
         scope.run {
             val paint = Paint().apply {
                 this.color = color.toArgb()
@@ -201,7 +155,7 @@ internal class BarGraphHelper(
                 textSize = 12.sp.toPx()
             }
             for (i in yAxisData.indices) {
-                val xPos = metrics.xItemSpacing * (i + if (centerLabels) 0.5f else 0f)
+                val xPos = metrics.xItemSpacing * (i + 0.5f)
                 drawContext.canvas.nativeCanvas.drawText(
                     xAxisData[i],
                     xPos,

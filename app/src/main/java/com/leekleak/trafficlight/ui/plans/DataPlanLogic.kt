@@ -14,6 +14,7 @@ import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 import kotlin.math.max
+import kotlin.math.roundToInt
 
 class DataPlanLogic(private val networkUsageManager: NetworkUsageManager) {
     suspend fun getDataSafety(dataPlan: DataPlan): MiniCardState {
@@ -32,7 +33,7 @@ class DataPlanLogic(private val networkUsageManager: NetworkUsageManager) {
         }
     }
 
-    suspend fun getTrend(dataPlan: DataPlan): Double {
+    suspend fun getTrend(dataPlan: DataPlan): Int {
         val nowStamp = LocalDateTime.now().toTimestamp()
         val hourAverage24 = networkUsageManager
             .getNetworkDataForType(nowStamp - 24 * 3_600_000, nowStamp, dataPlan.decryptedID, DataType.Mobile)
@@ -46,7 +47,7 @@ class DataPlanLogic(private val networkUsageManager: NetworkUsageManager) {
             )
             .sumOf { it.total } / 144.0
 
-        return (hourAverage24 / max(weekAverage, 1.0) - 1) * 100.0
+        return ((hourAverage24 / max(weekAverage, 1.0) - 1) * 100.0).roundToInt()
     }
 
     suspend fun getRemainingDailyBudget(dataPlan: DataPlan): Long {
@@ -67,7 +68,7 @@ class DataPlanLogic(private val networkUsageManager: NetworkUsageManager) {
         return remaining
     }
 
-    suspend fun getWeekUsage(dataPlan: DataPlan): List<BarData> = networkUsageManager.getWeekUsage(dataPlan.decryptedID, false)
+    suspend fun getWeekUsage(dataPlan: DataPlan): List<BarData> = networkUsageManager.getWeekUsage(dataPlan.decryptedID, DataType.Mobile)
 
     suspend fun getTopAppUsage(dataPlan: DataPlan): List<AppUsage> {
         val todayUsage = networkUsageManager.getAllAppUsage(

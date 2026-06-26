@@ -7,6 +7,7 @@ import com.leekleak.trafficlight.util.MiniCardState
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -23,8 +24,8 @@ class DataPlansVM(val dataPlansLogic: DataPlanLogic): ViewModel() {
     val dataSafety = planFlow.map { dataPlansLogic.getDataSafety(it) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), MiniCardState.NEUTRAL)
 
-    val trend = planFlow.map { dataPlansLogic.getTrend(it) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
+    val trend = planFlow.map { dataPlansLogic.getTrend(it) }.distinctUntilChanged()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
     val todayBudget = planFlow.map { dataPlansLogic.getRemainingDailyBudgetToday(it) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)

@@ -71,7 +71,6 @@ import com.leekleak.trafficlight.R
 import com.leekleak.trafficlight.charts.AppGraph
 import com.leekleak.trafficlight.charts.BarGraph
 import com.leekleak.trafficlight.database.DataType
-import com.leekleak.trafficlight.database.UsageQuery
 import com.leekleak.trafficlight.integrations.Ad
 import com.leekleak.trafficlight.integrations.AdType
 import com.leekleak.trafficlight.ui.navigation.Navigator
@@ -389,10 +388,7 @@ fun OverviewItems() {
                 .card()
                 .padding(6.dp)
         ) {
-            BarGraph(
-                data = data,
-                centerLabels = true
-            )
+            BarGraph(data)
         }
     }
 }

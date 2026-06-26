@@ -281,7 +281,7 @@ class NetworkUsageManager(
         emit(data.toList())
     }
 
-    suspend fun getWeekUsage(subscriberId: String?, withWifi: Boolean): List<BarData> {
+    suspend fun getWeekUsage(subscriberId: String?, dataType: DataType = DataType.Mobile): List<BarData> {
         val field = WeekFields.of(Locale.getDefault())
         val firstDay = field.firstDayOfWeek
         val data: MutableList<BarData> = MutableList(7) { i ->
@@ -295,9 +295,9 @@ class NetworkUsageManager(
             (0..daysPassed).map { i ->
                 async {
                     val now = now.minusDays(daysPassed.toLong() - i)
-                    val usage1 = totalDayUsage(UsageQuery(DataType.Mobile), now, subscriberId)
-                    val usage2 = if (withWifi) totalDayUsage(UsageQuery(DataType.Wifi), now, subscriberId) else 0
-                    data[i] = data[i].copy(y1 = usage1, y2 = usage2)
+                    val isWifi = dataType == DataType.Wifi
+                    val usage = totalDayUsage(UsageQuery(dataType), now, subscriberId)
+                    data[i] = data[i].copy(y1 = if (isWifi) 0 else usage, y2 = if (isWifi) usage else 0)
                 }
             }.awaitAll()
         }

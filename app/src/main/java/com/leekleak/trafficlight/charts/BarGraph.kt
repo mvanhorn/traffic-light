@@ -1,8 +1,6 @@
 package com.leekleak.trafficlight.charts
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.EaseIn
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -10,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.toPath
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableIntState
@@ -35,15 +32,11 @@ import kotlin.time.Duration.Companion.milliseconds
 @Composable
 fun BarGraph(
     data: List<BarData>,
-    showLegend: Boolean = true,
-    centerLabels: Boolean = false,
     onClick: (i: Int) -> Unit = {}
 ) {
         BarGraphImpl(
             xAxisData = data.map { it.x },
             yAxisData = data.map { Pair(it.y1, it.y2) },
-            showLegend = showLegend,
-            centerLabels = centerLabels,
             onClick = onClick
         )
 }
@@ -53,8 +46,6 @@ fun BarGraph(
 private fun BarGraphImpl(
     xAxisData: List<String>,
     yAxisData: List<Pair<Long, Long>>,
-    showLegend: Boolean,
-    centerLabels: Boolean,
     onClick: (i: Int) -> Unit
 ) {
     val scope = rememberCoroutineScope()
@@ -62,28 +53,12 @@ private fun BarGraphImpl(
 
     val primaryColor = GraphTheme.primaryColor
     val secondaryColor = GraphTheme.secondaryColor
-    val onPrimaryColor = GraphTheme.onPrimaryColor
-    val onSecondaryColor = GraphTheme.onSecondaryColor
     val gridColor = GraphTheme.gridColor
     val cornerRadius = GraphTheme.cornerRadius
-
-    val shapeWifi = GraphTheme.wifiShape().toPath()
-    val shapeCellular = GraphTheme.cellularShape().toPath()
-    val iconWifi = GraphTheme.wifiIcon()
-    val iconCellular = GraphTheme.cellularIcon()
     val legendSize = 32.dp.px
 
     val wifiLegendStrength = remember { mutableIntStateOf(5) }
     val cellularLegendStrength = remember { mutableIntStateOf(5) }
-
-    val wifiLegendOffset = animateFloatAsState(
-        if (wifiLegendStrength.intValue > 0) 0f else 120.dp.px,
-        tween(250, easing = EaseIn)
-    )
-    val cellularLegendOffset = animateFloatAsState(
-        if (cellularLegendStrength.intValue > 0) 0f else 120.dp.px,
-        tween(250, easing = EaseIn)
-    )
 
     val wifiAnimation = remember { Animatable(0f) }
     val cellularAnimation = remember { Animatable(0f) }
@@ -165,7 +140,6 @@ private fun BarGraphImpl(
             scope = this,
             yAxisData = yAxisData,
             xAxisData = xAxisData,
-            showLegend = showLegend,
             stretch = barAnimation,
             metric = metric
         )
@@ -178,31 +152,7 @@ private fun BarGraphImpl(
 
         barGraphHelper.drawGrid(gridColor)
 
-        if (showLegend) {
-            barGraphHelper.drawLegend(
-                barGraphHelper.metrics.cellularIconOffset.copy(
-                    y = barGraphHelper.metrics.cellularIconOffset.y + cellularLegendOffset.value
-                ),
-                primaryColor,
-                shapeCellular,
-                iconCellular,
-                onPrimaryColor,
-                cellularAnimation.value,
-            )
-
-            barGraphHelper.drawLegend(
-                barGraphHelper.metrics.wifiIconOffset.copy(
-                    y = barGraphHelper.metrics.wifiIconOffset.y + wifiLegendOffset.value
-                ),
-                secondaryColor,
-                shapeWifi,
-                iconWifi,
-                onSecondaryColor,
-                wifiAnimation.value,
-            )
-        }
-
-        barGraphHelper.drawTextLabelsOverXAndYAxis(gridColor, centerLabels)
+        barGraphHelper.drawTextLabelsOverXAndYAxis(gridColor)
         barGraphHelper.drawBars(cornerRadius, primaryColor, secondaryColor, barAnimationSqueeze)
     }
 }

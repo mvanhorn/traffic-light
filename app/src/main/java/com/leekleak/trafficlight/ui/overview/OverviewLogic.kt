@@ -13,6 +13,7 @@ import kotlinx.coroutines.coroutineScope
 import java.time.LocalDate
 import java.time.LocalDateTime
 import kotlin.math.max
+import kotlin.math.roundToInt
 
 class OverviewLogic(val networkUsageManager: NetworkUsageManager) {
     suspend fun getPrediction(query: UsageQuery): Long {
@@ -63,7 +64,7 @@ class OverviewLogic(val networkUsageManager: NetworkUsageManager) {
         return networkUsageManager.totalDayUsage(query, LocalDate.now())
     }
 
-    suspend fun getTrend(query: UsageQuery): Double {
+    suspend fun getTrend(query: UsageQuery): Int {
         val nowStamp = LocalDateTime.now().toTimestamp()
         // Last 24 hours
         val hourAverage24 = networkUsageManager
@@ -79,10 +80,10 @@ class OverviewLogic(val networkUsageManager: NetworkUsageManager) {
             )
             .sumOf { it.total } / 144.0
 
-        return (hourAverage24 / max(weekAverage, 1.0) - 1) * 100.0
+        return ((hourAverage24 / max(weekAverage, 1.0) - 1) * 100.0).roundToInt()
     }
 
-    suspend fun getWeekUsage(): List<BarData> = networkUsageManager.getWeekUsage(null, true)
+    suspend fun getWeekUsage(query: UsageQuery): List<BarData> = networkUsageManager.getWeekUsage(null, query.dataType)
 
     suspend fun getTopAppUsage(query: UsageQuery): List<AppUsage> {
         val todayUsage = networkUsageManager.getAllAppUsage(

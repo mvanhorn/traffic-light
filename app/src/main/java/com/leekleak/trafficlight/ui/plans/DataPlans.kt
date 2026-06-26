@@ -383,11 +383,7 @@ private fun LazyListScope.thisWeek() {
                     .background(colorScheme.surface)
                     .padding(6.dp)
             ) {
-                BarGraph(
-                    data = weekUsage,
-                    showLegend = false,
-                    centerLabels = true
-                )
+                BarGraph(weekUsage)
             }
         }
     }

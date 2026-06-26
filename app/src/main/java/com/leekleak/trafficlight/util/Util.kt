@@ -433,7 +433,7 @@ fun RowScope.MiniCard(
 
 @Composable
 fun RowScope.TrendCard(
-    trend: Double,
+    trend: Int,
     baseColor: Color = colorScheme.surfaceContainer,
 ) {
     val state = when {
@@ -452,7 +452,7 @@ fun RowScope.TrendCard(
         title = stringResource(R.string.trend),
         tooltipText = stringResource(R.string.trend_tooltip),
         description = buildAnnotatedString {
-            append(if (trend < 1000) "%+d%%".format(trend.toInt()) else stringResource(R.string.very_big))
+            append(if (trend < 1000) "%+d%%".format(trend) else stringResource(R.string.very_big))
         }
     )
 }
