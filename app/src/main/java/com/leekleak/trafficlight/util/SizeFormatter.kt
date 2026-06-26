@@ -67,8 +67,7 @@ data class DataSize (
     }
 
     fun unit(metric: Boolean = false): DataSizeUnit {
-        if (!metric) return unit
-        val base = 1000.0
+        val base = if (metric) 1000.0 else 1024.0
         var i = 0
         var newValue = byteValue.toDouble()
         while (newValue >= base && i < DataSizeUnit.entries.size - 1) {

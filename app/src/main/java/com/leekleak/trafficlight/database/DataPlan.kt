@@ -266,14 +266,14 @@ data class DataPlan(
         val activeExtras = extras.filter { !it.expired }
         val committedUsage = mainDataUsed + activeExtras.sumOf { it.dataUsed }
 
-        val now = System.currentTimeMillis()
-        var volatileUsage = 0L
-        if (now > lastUpdateStamp) {
-            val data = networkUsageManager.getNetworkDataForType(lastUpdateStamp, now, decryptedID, DataType.Mobile)
-            volatileUsage = data.filter { !excludedApps.contains(it.uid) }.sumOf { it.total }
-        }
+        return committedUsage + calculateVolatileUsage(networkUsageManager)
+    }
 
-        return committedUsage + volatileUsage
+    suspend fun calculateVolatileUsage(networkUsageManager: NetworkUsageManager): Long {
+        val now = System.currentTimeMillis()
+        if (now <= lastUpdateStamp) return 0L
+        val data = networkUsageManager.getNetworkDataForType(lastUpdateStamp, now, decryptedID, DataType.Mobile)
+        return data.filter { !excludedApps.contains(it.uid) }.sumOf { it.total }
     }
 
     companion object {

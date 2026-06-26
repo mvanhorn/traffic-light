@@ -94,7 +94,7 @@ class DataPlanTest {
         )
 
         val mockStats = mockk<NetworkStats>(relaxed = true)
-        every { networkUsageManager.queryDetails(any(), any(), any(), any()) } returns mockStats
+        coEvery { networkUsageManager.queryDetails(any(), any(), any(), any()) } returns mockStats
         
         var bucketCount = 0
         val bucketSlot = slot<NetworkStats.Bucket>()
@@ -132,7 +132,7 @@ class DataPlanTest {
         )
 
         val mockStats = mockk<NetworkStats>(relaxed = true)
-        every { networkUsageManager.queryDetails(any(), any(), any(), any()) } returns mockStats
+        coEvery { networkUsageManager.queryDetails(any(), any(), any(), any()) } returns mockStats
         every { mockStats.hasNextBucket() } returns false
 
         plan.updateUsage(networkUsageManager)
@@ -158,7 +158,7 @@ class DataPlanTest {
         )
 
         val mockStats = mockk<NetworkStats>(relaxed = true)
-        every { networkUsageManager.queryDetails(any(), any(), any(), any()) } returns mockStats
+        coEvery { networkUsageManager.queryDetails(any(), any(), any(), any()) } returns mockStats
         every { mockStats.hasNextBucket() } returns false
 
         plan.updateUsage(networkUsageManager)
@@ -192,7 +192,7 @@ class DataPlanTest {
         )
 
         val mockStats = mockk<NetworkStats>(relaxed = true)
-        every { networkUsageManager.queryDetails(any(), any(), any(), any()) } returns mockStats
+        coEvery { networkUsageManager.queryDetails(any(), any(), any(), any()) } returns mockStats
         
         // Single bucket to move lastUpdateStamp to now
         var bucketCount = 0
@@ -238,7 +238,7 @@ class DataPlanTest {
         )
 
         val mockStats = mockk<NetworkStats>(relaxed = true)
-        every { networkUsageManager.queryDetails(any(), any(), any(), any()) } returns mockStats
+        coEvery { networkUsageManager.queryDetails(any(), any(), any(), any()) } returns mockStats
         every { mockStats.hasNextBucket() } returns false
 
         // Volatile usage in the last hour: 500 bytes
@@ -272,7 +272,7 @@ class DataPlanTest {
         )
 
         val mockStats = mockk<NetworkStats>(relaxed = true)
-        every { networkUsageManager.queryDetails(any(), any(), any(), any()) } returns mockStats
+        coEvery { networkUsageManager.queryDetails(any(), any(), any(), any()) } returns mockStats
         every { mockStats.hasNextBucket() } returns false
         coEvery { networkUsageManager.getNetworkDataForType(any(), any(), any(), any()) } returns emptyList()
 
@@ -301,7 +301,7 @@ class DataPlanTest {
         )
 
         val mockStats = mockk<NetworkStats>(relaxed = true)
-        every { networkUsageManager.queryDetails(any(), any(), any(), any()) } returns mockStats
+        coEvery { networkUsageManager.queryDetails(any(), any(), any(), any()) } returns mockStats
         var bucketCount = 0
         val bucketSlot = slot<NetworkStats.Bucket>()
         every { mockStats.hasNextBucket() } answers { bucketCount < 1 }
@@ -367,7 +367,7 @@ class DataPlanTest {
         )
 
         val mockStats = mockk<NetworkStats>(relaxed = true)
-        every { networkUsageManager.queryDetails(any(), any(), any(), any()) } returns mockStats
+        coEvery { networkUsageManager.queryDetails(any(), any(), any(), any()) } returns mockStats
 
         // --- Update 1: Oct 18. Usage 600MB ---
         val tOct18 = LocalDateTime.of(2023, 10, 18, 12, 0)
@@ -408,7 +408,7 @@ class DataPlanTest {
         }
 
         coEvery { networkUsageManager.getNetworkDataForType(tOct18.toTimestamp(), tOct20.toTimestamp(), any(), any()) } returns listOf(
-            UsageData(upload = 100L, download = 300L)
+            UsageData(upload = 100L, download = 350L)
         )
         coEvery { networkUsageManager.getNetworkDataForType(tOct20.toTimestamp(), tOct22.toTimestamp(), any(), any()) } returns listOf(
             UsageData(upload = 200L, download = 400L)
@@ -421,7 +421,7 @@ class DataPlanTest {
 
         assertEquals("Update 2: Extra A should be full", 1000L, updatedExtraA.dataUsed)
         assertTrue("Update 2: Extra A should be marked expired", updatedExtraA.expired)
-        assertEquals("Update 2: Extra B should have taken usage", 600L, updatedExtraB.dataUsed)
+        assertEquals("Update 2: Extra B should have taken usage", 650L, updatedExtraB.dataUsed)
         assertEquals("Update 2: mainDataUsed should be unchanged", 500L, plan.mainDataUsed)
 
         // --- Update 3: Nov 2 ---
@@ -447,7 +447,7 @@ class DataPlanTest {
 
         assertEquals("Update 3: mainDataUsed should be reset", 0L, plan.mainDataUsed)
         assertEquals("Update 3: mainStartStamp should be Nov 1", startNov.toTimestamp(), plan.mainStartStamp)
-        assertEquals("Update 3: Extra B should have taken more usage", 900L, plan.extras.find { it.id == "extraB" }?.dataUsed)
+        assertEquals("Update 3: Extra B should have taken more usage", 950L, plan.extras.find { it.id == "extraB" }?.dataUsed)
         assertEquals("Update 3: lastUpdateStamp should be Nov 2", tNov2.toTimestamp(), plan.lastUpdateStamp)
     }
 

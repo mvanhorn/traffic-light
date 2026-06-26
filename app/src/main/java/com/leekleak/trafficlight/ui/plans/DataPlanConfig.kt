@@ -196,6 +196,16 @@ fun DataPlanConfig(currentPlan: DataPlan) {
     var newPlan by remember(currentPlan) { mutableStateOf(currentPlan.copy()) }
     var showDeleteDialog by remember { mutableStateOf(false) }
 
+    LaunchedEffect(Unit) {
+        val plan = newPlan.copy()
+        withContext(Dispatchers.Default) {
+            val total = plan.getUsage(networkUsageManager)
+            val extraUsed = plan.extras.sumOf { it.dataUsed }
+            plan.mainDataUsed = total - extraUsed
+        }
+        newPlan = plan
+    }
+
     var showForegroundNotificationWarning by remember { mutableStateOf(false) }
     if (showForegroundNotificationWarning) {
         NotificationWarningDialog(onDismiss = { showForegroundNotificationWarning = false })
@@ -204,18 +214,16 @@ fun DataPlanConfig(currentPlan: DataPlan) {
     val onCalculateUsage = {
         scope.launch {
             val planToCalculate = newPlan.copy()
-            val tempPlan = withContext(Dispatchers.Default) {
-                planToCalculate.copy(
-                    lastUpdateStamp = 0,
-                    mainDataUsed = 0,
-                    mainStartStamp = 0,
-                    mainExpiryStamp = 0,
-                    extras = planToCalculate.extras.map { it.copy(dataUsed = 0) }
-                ).apply {
-                    updateUsage(networkUsageManager)
-                }
+            withContext(Dispatchers.Default) {
+                planToCalculate.mainDataUsed = 0
+                planToCalculate.lastUpdateStamp = 0
+                planToCalculate.extras = planToCalculate.extras.map { it.copy(dataUsed = 0) }
+                
+                val total = planToCalculate.getUsage(networkUsageManager)
+                val extraUsed = planToCalculate.extras.sumOf { it.dataUsed }
+                planToCalculate.mainDataUsed = total - extraUsed
             }
-            newPlan = tempPlan
+            newPlan = planToCalculate
         }
     }
 
@@ -288,12 +296,15 @@ fun DataPlanConfig(currentPlan: DataPlan) {
 
                     Button(onClick = {
                         scope.launch(Dispatchers.IO) {
-                            newPlan = newPlan.copy(
+                            val volatile = newPlan.calculateVolatileUsage(networkUsageManager)
+                            val planToSave = newPlan.copy(
+                                mainDataUsed = max(0L, newPlan.mainDataUsed - volatile),
                                 lastSafetyState = -1,
                                 budgetOvershotNotified = false,
                                 configured = true
                             )
-                            dataPlanDao.add(newPlan)
+                            dataPlanDao.add(planToSave)
+                            shizukuServicesProvider.updateSimData()
                             haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
                             navigator.goBack()
                         }
@@ -679,10 +690,10 @@ private fun LazyListScope.typeConfig(
                     )
                 }
             }
-
+            
             val font = remember { googleSans(weight = 600f) }
             val metric = LocalSizeMetric.current
-            val formatter = remember { DecimalFormat("0.#") }
+            val formatter = remember { DecimalFormat("0.##") }
             val numberFormat = remember { NumberFormat.getInstance() }
             val textFieldState = rememberTextFieldState()
             var ignoreNextTextUpdate by remember { mutableStateOf(true) }
