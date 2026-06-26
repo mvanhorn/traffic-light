@@ -121,6 +121,7 @@ class Widget: GlanceAppWidget() {
                             usageString = usageString,
                             quotaString = quotaString,
                             progress = usageSize / max(dataMax, 1.0),
+                            dataMax = dataMax,
                             resetString = dataPlan.resetString(context)
                         )
                     } else {
@@ -154,7 +155,8 @@ class Widget: GlanceAppWidget() {
                 usageString = "8.5",
                 quotaString = "20",
                 progress = 8.5 / 20.0,
-                resetString = "Resets in 8 days"
+                resetString = "Resets in 8 days",
+                dataMax = 20.0
             )
         }
     }
@@ -164,7 +166,8 @@ class Widget: GlanceAppWidget() {
         usageString: String,
         quotaString: String,
         progress: Double,
-        resetString: String
+        resetString: String,
+        dataMax: Double
     ) {
         Column(
             modifier = GlanceModifier.fillMaxSize(),
@@ -183,7 +186,7 @@ class Widget: GlanceAppWidget() {
                     ),
                 )
                 Text(
-                    text = "/${quotaString}GB",
+                    text = "${if (dataMax != 0.0) "/$quotaString" else "" }GB",
                     style = TextStyle(
                         color = GlanceTheme.colors.onSurface,
                         fontSize = 36.sp,
@@ -204,14 +207,16 @@ class Widget: GlanceAppWidget() {
                     textAlign = TextAlign.Center
                 ),
             )
-            LinearProgressIndicator(
-                modifier = GlanceModifier
-                    .height(4.dp)
-                    .fillMaxWidth(),
-                color = GlanceTheme.colors.primary,
-                backgroundColor = GlanceTheme.colors.primaryContainer,
-                progress = progress.toFloat(),
-            )
+            if (dataMax != 0.0) {
+                LinearProgressIndicator(
+                    modifier = GlanceModifier
+                        .height(4.dp)
+                        .fillMaxWidth(),
+                    color = GlanceTheme.colors.primary,
+                    backgroundColor = GlanceTheme.colors.primaryContainer,
+                    progress = progress.toFloat(),
+                )
+            }
         }
     }
 

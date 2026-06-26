@@ -60,6 +60,7 @@ class PlanNotification(
         val data = dataSize.toString(metric = sizeMetric)
         val speed = data.substringBefore(" ")
         val unit = data.substringAfter(" ")
+        val maxString = if (dataPlan.mainDataSize.byteValue!=0L) "/${dataSizeMax.toString(metric = sizeMetric)}" else ""
         notification = notificationBuilder
             .apply {
                 if (!dataPlan.liveNotification) {
@@ -71,10 +72,12 @@ class PlanNotification(
                     setSmallIcon(simIconRes(dataPlan.simIndex))
                     setShortCriticalText(dataSize.toString(metric = sizeMetric))
                 }
+                if (dataPlan.mainDataSize.byteValue != 0L) {
+                    setProgress(100, (progress*100).toInt(), false)
+                }
             }
-            .setContentTitle("${dataSize.toString(metric = sizeMetric)}/${dataSizeMax.toString(metric = sizeMetric)}")
+            .setContentTitle("${dataSize.toString(metric = sizeMetric)}$maxString")
             .setContentText(dataPlan.resetString(context))
-            .setProgress(100, (progress*100).toInt(), false)
             .build()
         notifySafely(notificationId, notification)
     }

@@ -142,7 +142,7 @@ private fun DataPlanPager(
     ) { page ->
         if (page < activePlans.size) {
             val plan = activePlans[page]
-            if (plan.mainDataSize.byteValue != 0L) {
+            if (plan.configured) {
                 ConfiguredDataPlan(plan) {
                     navigator.goTo(PlanConfigKey(plan))
                 }

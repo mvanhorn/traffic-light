@@ -184,7 +184,11 @@ private fun BoxScope.ConfiguredDataPlanContent(dataPlan: DataPlan) {
                     append(formatter.format(usageValue))
                 }
                 withStyle(style = SpanStyle(fontSize = 36.sp, fontFamily = fontFamilyDoHyeon)) {
-                    appendLine("/${data}${dataPlan.mainDataSizeUnit.name}")
+                    if (dataPlan.mainDataSize.byteValue != 0L) {
+                        appendLine("/${data}${dataPlan.mainDataSizeUnit.name}")
+                    } else {
+                        appendLine(dataPlan.mainDataSizeUnit.name)
+                    }
                 }
             }
         )
@@ -202,13 +206,15 @@ private fun BoxScope.ConfiguredDataPlanContent(dataPlan: DataPlan) {
             text = dataPlan.resetString(context),
             fontFamily = fontFamilyGoogleSans
         )
-        LinearWavyProgressIndicator(
-            modifier = Modifier.fillMaxWidth(),
-            progress = {
-                val totalMax = dataPlan.mainDataSize.byteValue
-                if (totalMax == 0L) 0f
-                else (usageDataSize.byteValue / totalMax.toDouble()).toFloat().coerceIn(0f, 1f)
-            },
-        )
+        if (dataPlan.mainDataSize.byteValue != 0L) {
+            LinearWavyProgressIndicator(
+                modifier = Modifier.fillMaxWidth(),
+                progress = {
+                    val totalMax = dataPlan.mainDataSize.byteValue
+                    if (totalMax == 0L) 0f
+                    else (usageDataSize.byteValue / totalMax.toDouble()).toFloat().coerceIn(0f, 1f)
+                },
+            )
+        }
     }
 }
