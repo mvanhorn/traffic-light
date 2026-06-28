@@ -125,8 +125,8 @@ class SpeedNotification(
     private var lastContent: String = ""
     private suspend fun updateNotification(trafficSnapshot: TrafficSnapshot, force: Boolean = false) {
         val data = DataSize(trafficSnapshot.totalSpeed).toString(speed = true, inBits = inBits, metric = speedMetric)
-        val download = DataSize(trafficSnapshot.downSpeed).toString(speed = true, inBits = inBits, metric = speedMetric)
         val upload = DataSize(trafficSnapshot.upSpeed).toString(speed = true, inBits = inBits, metric = speedMetric)
+        val download = DataSize(trafficSnapshot.downSpeed).toString(speed = true, inBits = inBits, metric = speedMetric)
         val title = context.getString(R.string.up_down, upload, download)
 
         val spacing = 18
@@ -180,7 +180,7 @@ class SpeedNotification(
         val channel = when {
             (speedThreshold &&
                 (
-                    (speedThresholdKb == -1L) && !isNetworkAvailable() ||
+                    ((speedThresholdKb == -1L) && !isNetworkAvailable()) ||
                     (trafficSnapshot.totalSpeed.toKb < speedThresholdKb)
                 )
             ) -> NOTIFICATION_CHANNEL_ID_SILENT
@@ -206,12 +206,11 @@ class SpeedNotification(
     }
 
     private fun isNetworkAvailable(): Boolean {
-        val capabilities = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            capabilities?.run {
+            connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)?.run {
                 hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
-                        hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
-                        hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
+                hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
+                hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
             } ?: false
         } else {
             connectivityManager.activeNetworkInfo?.run {
