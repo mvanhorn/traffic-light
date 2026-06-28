@@ -134,7 +134,11 @@ class SpeedNotification(
             context.getString(R.string.wi_fi, DataSize(todayUsage.usage2).toString(metric = sizeMetric)).clipAndPad(spacing) +
             context.getString(R.string.mobile, DataSize(todayUsage.usage1).toString(metric = sizeMetric))
 
-        if (lastTitle == data && lastContent == messageShort && !force) return
+        val silent = shouldGoSilent()
+        if (!force) updateSilentTicks()
+        // Cancel update only if there is no need to update the notification channel
+        if (lastTitle == data && lastContent == messageShort && silent == shouldGoSilent() && !force) return
+
         lastTitle = data
         lastContent = messageShort
 
@@ -177,15 +181,8 @@ class SpeedNotification(
     }
 
     private fun updateBaseNotification() {
-        val channel = when {
-            (speedThreshold &&
-                (
-                    ((speedThresholdKb == -1L) && !isNetworkAvailable()) ||
-                    (trafficSnapshot.totalSpeed.toKb < speedThresholdKb)
-                )
-            ) -> NOTIFICATION_CHANNEL_ID_SILENT
-            else -> NOTIFICATION_CHANNEL_ID
-        }
+        val channel = if (shouldGoSilent()) NOTIFICATION_CHANNEL_ID_SILENT
+                      else NOTIFICATION_CHANNEL_ID
         notificationBuilder = NotificationCompat.Builder(context, channel)
             .setSmallIcon(R.drawable.notification)
             .setContentTitle(context.getString(R.string.app_name_short))
@@ -204,6 +201,21 @@ class SpeedNotification(
             )
         notification = notificationBuilder.build()
     }
+
+    private var silentChannelTicks: Long = 0
+    private fun updateSilentTicks() {
+        if ((speedThreshold &&
+            (
+                ((speedThresholdKb == -1L) && !isNetworkAvailable()) ||
+                (trafficSnapshot.totalSpeed.toKb < speedThresholdKb)
+            )
+        )){
+            silentChannelTicks++
+        } else {
+            silentChannelTicks = 0
+        }
+    }
+    private fun shouldGoSilent(): Boolean = (silentChannelTicks >= SILENT_CHANNEL_TICK_TARGET) && speedThreshold
 
     private fun isNetworkAvailable(): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -226,6 +238,7 @@ class SpeedNotification(
 
     companion object {
         private const val DATA_UPDATE_FREQ = 4
+        private const val SILENT_CHANNEL_TICK_TARGET = 4
         const val NOTIFICATION_CHANNEL_ID = "Persistent Notification"
         const val NOTIFICATION_CHANNEL_ID_SILENT = "Persistent Notification Silent"
     }
