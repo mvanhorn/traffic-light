@@ -61,8 +61,8 @@ class OverviewLogicTest {
 
         assertEquals(result.cellular.download + result.cellular.upload, result.cellular.total)
         assertEquals(result.wifi.download + result.wifi.upload, result.wifi.total)
-        verify(exactly = 2) { networkStatsManager.querySummary(MOBILE_QUERY_INDEX, null, any(), any()) }
-        verify(exactly = 2) { networkStatsManager.querySummary(WIFI_QUERY_INDEX, null, any(), any()) }
+        verify(exactly = 1) { networkStatsManager.querySummary(MOBILE_QUERY_INDEX, null, any(), any()) }
+        verify(exactly = 1) { networkStatsManager.querySummary(WIFI_QUERY_INDEX, null, any(), any()) }
     }
 
     @Test

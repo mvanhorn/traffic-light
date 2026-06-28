@@ -2,7 +2,6 @@ package com.leekleak.trafficlight.ui.overview
 
 import com.leekleak.trafficlight.charts.model.BarData
 import com.leekleak.trafficlight.database.AppUsage
-import com.leekleak.trafficlight.database.DataDirection
 import com.leekleak.trafficlight.database.DataType
 import com.leekleak.trafficlight.database.UsageQuery
 import com.leekleak.trafficlight.model.AppManager.Companion.allApp
@@ -87,15 +86,13 @@ class OverviewLogic(val networkUsageManager: NetworkUsageManager) {
     }
 
     private suspend fun getTransportUsage(dataType: DataType, date: LocalDate): TransportUsage {
+        val startStamp = date.toTimestamp()
+        val endStamp = date.plusDays(1).toTimestamp()
+        val usage = networkUsageManager.getNetworkDataForType(startStamp, endStamp, null, dataType)
+
         return TransportUsage(
-            download = networkUsageManager.totalDayUsage(
-                UsageQuery(dataType, DataDirection.Download),
-                date,
-            ),
-            upload = networkUsageManager.totalDayUsage(
-                UsageQuery(dataType, DataDirection.Upload),
-                date,
-            ),
+            download = usage.sumOf { it.download },
+            upload = usage.sumOf { it.upload },
         )
     }
 
